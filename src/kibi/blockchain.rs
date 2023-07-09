@@ -59,8 +59,6 @@ impl Blockchain {
   fn add_block(&mut self, block: &Block, proof: String) -> bool {
       let previous_hash = &self.last_block().hash;
 
-    //   println!("LAST BLOCK: {:?}", previous_hash);
-
       if previous_hash != &block.prev_hash {
           return false;
       }
@@ -68,21 +66,6 @@ impl Blockchain {
       if !self.is_valid_proof(&block, proof) {
           return false;
       }
-
-      // NOTE: idk why, but this is failing because what this
-      // function receives is a &Block, and the chain is a kind of
-      // Vec<Block>. So the compiler is reclaiming about it.
-
-      // So, the way out was recreating a new Block using
-      // the block parameter data info
-    //   self.chain.push(Block {
-    //       index: block.index,
-    //       nonce: block.nonce,
-    //       transactions: block.transactions.clone(),
-    //       timestamp: block.timestamp,
-    //       hash: block.hash.clone(),
-    //       prev_hash: block.prev_hash.clone()
-    //   });
 
       // Store the current block hash
       save_current_block_hash(block.hash.as_str().as_bytes()).unwrap();
@@ -166,7 +149,6 @@ impl Blockchain {
       }
 
       let last_block = self.last_block();
-      println!("LAST BLOCK ------> {:?}", last_block);
 
       let mut new_block = Block::new(
         last_block.index + 1,

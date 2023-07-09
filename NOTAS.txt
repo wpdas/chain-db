@@ -43,3 +43,6 @@ se mostra importante a cobrança para guardar dados (mais caro) e ler dados (mai
 
 10 - Montar servidor no raspberry e deixar disponível no mundo usando serviço de DNS ou
 abrindo a porta do roteador.
+
+11 - Uma senha deve ser informada para o DB. Isso servirá de porta de accesso para
+escrita e leitura.
