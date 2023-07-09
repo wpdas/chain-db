@@ -1,0 +1,11 @@
+[P] = Recurso do produto
+    = Recurso técnico
+
+1 - [P] Criar Modelo de Tabelas como Contrato Inteligente;
+2 - [P] A porta principal do ChainDB é o 2818;
+2 - Cada bloco é salvo no disco;
+3 - Quando é requisitado leitura de blocos, eles são lidos do disco e postos na memoria
+enquanto o processo durar.
+4 - Uma referencia do último bloco é guardado no arquivo "data/cur-block.inf". Isso é feito
+para que seja possível saber a partir de qual bloco os dados devem ser lidos ou novos blocos
+criados.
