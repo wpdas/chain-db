@@ -4,7 +4,7 @@ use std::{time::SystemTime, collections::HashMap, fs::{File, self, read_to_strin
 
 use crate::kibi::types::ContractTransactionData;
 
-use super::{block::{BlockJson, Block}, instance::BlockchainInstance, types::{Kib, KibFields}};
+use super::{block::{BlockJson, Block}, instance::BlockchainInstance, types::{Kibi, KibiFields}};
 
 pub fn hash_generator(data: String) -> String {
   return sha256::digest(data);
@@ -99,7 +99,7 @@ pub fn load_block (block_hash: String) -> Option<Block> {
 /**
  * Get the most updated Kib fields info from chain
  */
-pub fn get_kibi_from_chain () -> Kib{
+pub fn get_kibi_from_chain () -> Kibi{
   let chain = BlockchainInstance::get_chain();
 
   for block in chain {
@@ -109,13 +109,13 @@ pub fn get_kibi_from_chain () -> Kib{
 
     for tx in block_json.transactions {
       if tx["kib"].is_object() {
-        let restored_kib: Kib = serde_json::from_value(tx).unwrap();
+        let restored_kib: Kibi = serde_json::from_value(tx).unwrap();
         return restored_kib;
       }
     }
   }
 
-  Kib { kib: KibFields { accounts: HashMap::new() } }
+  Kibi { kibi: KibiFields { accounts: HashMap::new() } }
 }
 
 /**
@@ -143,7 +143,8 @@ pub fn get_contract_from_chain (contract_id: String) -> Option<ContractTransacti
 }
 
 // Difficulty of PoW algorithm
-pub const DIFFICULTY: usize = 0;
+// WARNING: changing the DIFFICULTY may break the blockchain hashes
+pub const DIFFICULTY: usize = 2;
 
 // Default depth (how many to load) of blocks (used to get the blocks)
 pub const SEARCH_BLOCK_DEPTH: u64 = 1000;

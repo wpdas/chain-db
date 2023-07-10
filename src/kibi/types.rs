@@ -31,15 +31,15 @@ pub struct NewAccountData {
   pub account: String,
 }
 
-// KiB
-pub type KibAccounts = HashMap<String, String>;
+// KiBi
+pub type KibiAccounts = HashMap<String, String>;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct KibFields {
-  pub accounts: KibAccounts,
+pub struct KibiFields {
+  pub accounts: KibiAccounts,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Kib {
-  pub kib: KibFields
+pub struct Kibi {
+  pub kibi: KibiFields
 }
