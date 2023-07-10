@@ -151,7 +151,7 @@ impl Blockchain {
       let last_block = self.last_block();
 
       let mut new_block = Block::new(
-        last_block.index + 1,
+        last_block.height + 1,
         last_block.hash.clone(),
         None,
         Some(self.unconfirmed_transactions.clone()),
@@ -163,6 +163,6 @@ impl Blockchain {
       // clear unconfirmed transactions
       self.unconfirmed_transactions.clear();
 
-      return MineReturnOptions::I64(new_block.index);
+      return MineReturnOptions::I64(new_block.height);
   }
 }

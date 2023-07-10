@@ -12,7 +12,6 @@ use super::{
  * https://stackoverflow.com/questions/27791532/how-do-i-create-a-global-mutable-singleton
  */
 static mut BLOCKCHAIN: Lazy<Blockchain> = Lazy::new(|| Blockchain::new());
-// static mut ACCOUNTS: Lazy<AccountId> = Lazy::new(|| AccountId::init());
 
 pub struct BlockchainInstance {}
 
@@ -34,8 +33,4 @@ impl BlockchainInstance {
       return BLOCKCHAIN.mine()
     }
   }
-
-  // pub fn create_account(account: String) {
-  //   AccountId::new(account);
-  // }
 }

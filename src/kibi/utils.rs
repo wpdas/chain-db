@@ -1,10 +1,11 @@
+use borsh::{BorshSerialize, try_from_slice_with_schema, BorshDeserialize};
 use serde_json::Value;
 use sha256;
 use std::{time::SystemTime, collections::HashMap, fs::{File, self, read_to_string}, io::{Write}, path::Path};
 
 use crate::kibi::types::ContractTransactionData;
 
-use super::{block::{BlockJson, Block}, instance::BlockchainInstance, types::{Kibi, KibiFields}};
+use super::{block::{BlockJson, Block}, instance::BlockchainInstance, types::{Kibi, KibiFields}, crypto::Base64};
 
 pub fn hash_generator(data: String) -> String {
   return sha256::digest(data);
@@ -29,7 +30,7 @@ pub fn block_to_blockjson(block: Block) -> BlockJson {
 
   // create a BlockJson data
   BlockJson {
-    index: block.index,
+    height: block.height,
     nonce: block.nonce,
     timestamp: block.timestamp,
     hash: block.hash,
@@ -57,7 +58,8 @@ pub fn save_block (block: &Block) -> Result<(), std::io::Error> {
   let mut file = File::create(file_name)
     .expect("Error while writing block info");
 
-  let encoded_block = serde_json::to_string(&block).unwrap();
+  // let encoded_block = serde_json::to_string(&block).unwrap();
+  let encoded_block = Base64::encode(block.try_to_vec().unwrap());
 
   file.write_all(encoded_block.as_bytes())
 }
@@ -75,7 +77,8 @@ pub fn load_current_block () -> Option<Block> {
   let current_block_data = read_to_string(path_to_current_block)
     .expect("Block hash not found");
 
-  serde_json::from_str(&current_block_data).unwrap()
+  // serde_json::from_str(&current_block_data).unwrap()
+  Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
 }
 
 pub fn load_block (block_hash: String) -> Option<Block> {
@@ -93,29 +96,8 @@ pub fn load_block (block_hash: String) -> Option<Block> {
     return None;
   }
 
-  Some(serde_json::from_str(&current_block_data).unwrap())
-}
-
-/**
- * Get the most updated Kib fields info from chain
- */
-pub fn get_kibi_from_chain () -> Kibi{
-  let chain = BlockchainInstance::get_chain();
-
-  for block in chain {
-
-    // decode transactions
-    let block_json = block_to_blockjson(block.to_owned());
-
-    for tx in block_json.transactions {
-      if tx["kib"].is_object() {
-        let restored_kib: Kibi = serde_json::from_value(tx).unwrap();
-        return restored_kib;
-      }
-    }
-  }
-
-  Kibi { kibi: KibiFields { accounts: HashMap::new() } }
+  // Some(serde_json::from_str(&current_block_data).unwrap())
+  Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
 }
 
 /**

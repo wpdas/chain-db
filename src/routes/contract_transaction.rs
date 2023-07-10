@@ -8,8 +8,8 @@ use crate::kibi::{
 
 // TIP: '_ can be used to set the type as "unknown"
 
-#[post("/", format="json", data="<tx_data>")]
-pub fn post(mut tx_data: Json<ContractTransactionData>) -> &'static str {
+#[post("/<mine>", format="json", data="<tx_data>")]
+pub fn post(mut tx_data: Json<ContractTransactionData>, mine: u8) -> &'static str {
   // Check fields
   if tx_data.contract_id.is_empty() {
     return "Invalid transaction data" // 404
@@ -23,7 +23,11 @@ pub fn post(mut tx_data: Json<ContractTransactionData>) -> &'static str {
   // println!("{:?} tx_data:", stringified_tx_data);
 
   BlockchainInstance::add_new_transaction(stringified_tx_data);
-  BlockchainInstance::mine();
+
+  // Should mine?
+  if mine == 1 {
+    BlockchainInstance::mine();
+  }
 
   "Success"
 }

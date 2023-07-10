@@ -8,6 +8,7 @@ pub enum TransactionType {
   NONE,
   ACCOUNT,
   CONTRACT,
+  TRANSFER,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
