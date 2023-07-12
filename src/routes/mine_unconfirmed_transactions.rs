@@ -4,7 +4,7 @@ use crate::kibi::{instance::BlockchainInstance, blockchain::MineReturnOptions};
 
 #[get("/")]
 pub fn get() -> String {
-  let result = BlockchainInstance::mine();
+  let result = BlockchainInstance::blockchain().mine();
 
   let (has_pending_transactions, new_block_index) = match result {
       MineReturnOptions::BOOL(value) => (value, 0),

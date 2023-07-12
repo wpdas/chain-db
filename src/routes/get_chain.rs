@@ -1,9 +1,9 @@
 use rocket::{get, serde::json::Json};
-use serde::{Serialize};
+use serde::Serialize;
 
 use crate::kibi::{
   instance::BlockchainInstance,
-  block::BlockJson, utils::block_to_blockjson
+  block::BlockJson, utils::{block_to_blockjson, SEARCH_BLOCK_DEPTH}
 };
 
 #[derive(Serialize)]
@@ -18,12 +18,12 @@ pub struct ChainResponse {
 pub fn get() -> Json<ChainResponse> {
   let mut chain_data: Vec<BlockJson> = vec![];
 
-  let chain = BlockchainInstance::get_chain();
+  let chain = BlockchainInstance::blockchain().chain(SEARCH_BLOCK_DEPTH);
 
   for block in chain {
 
     // decode transactions
-    let block_json = block_to_blockjson(block.to_owned());
+    let block_json = block_to_blockjson(&block);
 
     // push the current block to the list of blocks
     chain_data.push(block_json)

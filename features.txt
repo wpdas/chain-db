@@ -11,9 +11,30 @@ para que seja possível saber a partir de qual bloco os dados devem ser lidos ou
 criados.
 5 - Usando Borsh para serializar o bloco (produz arquivo menor que json e suporta mais tipos
 de dados)
+6 - Cada bloco é salvo num arquivo .blk;
+7 - A referencia do ultimo bloco fica salvo no arquivo cur-block.inf;
+8 - O sistema (core) sempre tentará usar o db_access_key para
+encriptografar / decriptografar os blocos
+8.1 - Caso um dado nao seja corretamente decompilado (por erro de chave), é retornado
+um aviso de "Banco de Dados não existe na rede"
 
 
 --- pendente
 
-1 - Criar recurso para transferencia de units (entre contas)
-2 - CLI deve usar o recurso de Result, Error para chamadas
+1 - Criar recurso para transferencia de units (entre contas);
+2 - CLI deve usar o recurso de Result, Error para chamadas;
+3 - Gerar os .blk usando algum tipo de assinatura, assim nao fica facil
+decompilar o arquivo. (pub / priv key).
+4 - Remover o uso do Lazy (náo é necessario)
+5 - get_chain() -> deve ter um filtro para buscar os blocos até achar o valor,
+e não buscar todos os blocos, alocar em memoria e depois fazer a busca. Isso vai 
+prejudicar a memória se continuar no jeito atual. - DONE
+
+6 - Criar os core contracts dentro da pasta/mod "core_tables"
+6.1 - Criar metodo para criar DB [salvar num core table]
+6.2 - Criar método para checar se um DB existe
+6.3 - Create Account: Usar email para evitar a colisao de mesma conta
+Salva o email em um contrato/tabela (default) diferente para que seja possível
+fazer uma comparacao rapida e ver se o email já está sendo utilizado. Talvez
+guardar chave e valor como: { user@email.com = hash_id do usuário }
+7 - Usar o db_access_key para encriptografar e decriptografar blocos

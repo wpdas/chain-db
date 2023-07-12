@@ -1,9 +1,6 @@
 use once_cell::sync::Lazy;
 
-use super::{
-  blockchain::{Blockchain, MineReturnOptions},
-  block::Block, utils::SEARCH_BLOCK_DEPTH
-};
+use super::blockchain::Blockchain;
 
 /**
  * A blockchian instance to be used globally
@@ -16,21 +13,27 @@ static mut BLOCKCHAIN: Lazy<Blockchain> = Lazy::new(|| Blockchain::new());
 pub struct BlockchainInstance {}
 
 impl BlockchainInstance {
-  pub fn add_new_transaction(transaction: String) {
+  pub fn blockchain() -> Blockchain {
     unsafe {
-      BLOCKCHAIN.add_new_transaction(transaction)
+      BLOCKCHAIN.clone()
     }
   }
 
-  pub fn get_chain() -> Vec<Block> {
-    unsafe {
-      return BLOCKCHAIN.chain(SEARCH_BLOCK_DEPTH).to_vec()
-    }
-  }
+  // pub fn add_new_transaction(transaction: String) {
+  //   unsafe {
+  //     BLOCKCHAIN.add_new_transaction(transaction)
+  //   }
+  // }
 
-  pub fn mine() -> MineReturnOptions {
-    unsafe {
-      return BLOCKCHAIN.mine()
-    }
-  }
+  // pub fn get_chain() -> Vec<Block> {
+  //   unsafe {
+  //     return BLOCKCHAIN.chain(SEARCH_BLOCK_DEPTH).to_vec()
+  //   }
+  // }
+
+  // pub fn mine() -> MineReturnOptions {
+  //   unsafe {
+  //     return BLOCKCHAIN.mine()
+  //   }
+  // }
 }

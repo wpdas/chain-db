@@ -18,9 +18,11 @@ fn rocket() -> _ {
 
     rocket::custom(figment)
         .mount("/", routes![routes::health_route::get])
-        .mount("/contract_transaction", routes![routes::contract_transaction::post])
-        .mount("/contract_payload", routes![routes::get_contract_payload::get])
-        .mount("/contract_payload_json", routes![routes::get_contract_payload_json::get])
+        .mount("/post_contract_transaction", routes![routes::contract_transaction::post])
+        // Returns the most recent transaction only under a specific contract
+        .mount("/get_last_contract_transaction", routes![routes::get_contract_transaction::get])
+        // Return a list of transactions under a specific contract
+        .mount("/get_contract_transactions", routes![routes::get_contract_transactions::get])
         .mount("/chain", routes![routes::get_chain::get])
         .mount("/mine", routes![routes::mine_unconfirmed_transactions::get])
 

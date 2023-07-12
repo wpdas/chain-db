@@ -1,7 +1,8 @@
 use crate::kibi::block::Block;
 use crate::kibi::utils::{hash_generator, DIFFICULTY};
 
-use super::utils::{save_current_block_hash, save_block, load_current_block, load_block, SEARCH_BLOCK_DEPTH};
+use super::types::{ContractTransactionData, ContractTransactionDataJson};
+use super::utils::{save_current_block_hash, save_block, load_current_block, load_block, SEARCH_BLOCK_DEPTH, block_to_blockjson};
 
 // A way to inform the kinds of data for a given method
 #[derive(Debug)]
@@ -10,6 +11,7 @@ pub enum MineReturnOptions {
     I64(i64),
 }
 
+#[derive(Clone)]
 pub struct Blockchain {
 //   pub chain: Vec<Block>, // Talvez vai ser removido (os arquivos vivem localmente)
   pub unconfirmed_transactions: Vec<String>
@@ -76,7 +78,14 @@ impl Blockchain {
       true
   }
 
+  /**
+   * Returns all the blocks inside the blockchain.
+   * THIS MAY BE DANGEROUS WHEN THERE'S BIG DATA. May exceed the memory allocation.
+   * USE THIS TO DEBUG PURPOSES ONLY
+   */
   pub fn chain(&self, depth: u64) -> Vec<Block> {
+    // TODO: the block decription should occur here
+
     let mut chain: Vec<Block> = vec![];
 
     let current_block = load_current_block().unwrap();
@@ -103,6 +112,112 @@ impl Blockchain {
     };
 
     return chain;
+  }
+
+  /**
+   * Run over blocks to get the transactions under a specific contract
+   * Gets all data/transactions inside the contract
+   * 
+   * Preffer to use `get_last_transaction_data_under_contract` that's going to return
+   * only one transaction/data (the most recent one)
+   */
+  pub fn get_transactions_under_contract(&self, contract_id: String, depth: u64) -> Vec<ContractTransactionDataJson> {
+    // TODO: the block decription should occur here;
+    let mut transactions: Vec<ContractTransactionDataJson> = vec![];
+    let current_block = load_current_block().unwrap();
+    let mut prev_block_hash = current_block.prev_hash.to_owned();
+    
+    let mut n = 0;
+
+    while n < depth {
+        let block_opt = load_block(prev_block_hash.to_owned());
+
+        if block_opt.is_none() {
+            break;
+        }
+
+        let block = block_opt.unwrap();
+
+        // decode transactions
+        let block_json = block_to_blockjson(&block);
+        for tx in block_json.transactions {
+            if tx["contract_id"].is_string() && tx["contract_id"] == contract_id {
+
+                let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
+
+                // create json version from dec_tx
+                let dec_tx_json = ContractTransactionDataJson {
+                    tx_type: dec_tx.tx_type,
+                    contract_id: dec_tx.contract_id,
+                    timestamp: dec_tx.timestamp,
+                    data: serde_json::from_str(&dec_tx.data).unwrap(),
+                    block_hash: block_json.hash.clone(),
+                    block_height: block_json.height,
+                };
+
+                transactions.push(dec_tx_json);
+            }
+          }
+
+        // set the new prev_block_hash
+        prev_block_hash = block.prev_hash;
+
+        n += 1;
+    };
+
+    return transactions;
+  }
+
+  /**
+   * Run over blocks to get the last transaction data under a specific contract
+   * Gets the most recent data/transaction inside the contract
+   * 
+   * Preffer to use this method than `get_transactions_under_contract` that's going
+   * to fetch all transactions under a contract. This is heavy.
+   */
+  pub fn get_last_transaction_data_under_contract(&self, contract_id: String, depth: u64) -> Option<ContractTransactionDataJson> {
+    // TODO: the block decription should occur here;
+    let current_block = load_current_block().unwrap();
+    let mut prev_block_hash = current_block.prev_hash.to_owned();
+    let mut n = 0;
+
+    while n < depth {
+        let block_opt = load_block(prev_block_hash.to_owned());
+
+        if block_opt.is_none() {
+            break;
+        }
+
+        let block = block_opt.unwrap();
+
+        // decode transactions
+        let block_json = block_to_blockjson(&block);
+        for tx in block_json.transactions {
+            if tx["contract_id"].is_string() && tx["contract_id"] == contract_id {
+
+                let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
+
+                // create json version from dec_tx
+                let dec_tx_json = ContractTransactionDataJson {
+                    tx_type: dec_tx.tx_type,
+                    contract_id: dec_tx.contract_id,
+                    timestamp: dec_tx.timestamp,
+                    data: serde_json::from_str(&dec_tx.data).unwrap(),
+                    block_hash: block_json.hash,
+                    block_height: block_json.height,
+                  };
+
+                return Some(dec_tx_json);
+            }
+          }
+
+        // set the new prev_block_hash
+        prev_block_hash = block.prev_hash;
+
+        n += 1;
+    };
+
+    None
   }
 
   /**
