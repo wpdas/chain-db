@@ -2,8 +2,9 @@ use borsh::{BorshSerialize, BorshDeserialize};
 use serde_json::Value;
 use sha256;
 use std::{time::SystemTime, fs::{File, self, read_to_string}, io::Write, path::Path};
+use std::str;
 
-use super::{block::{BlockJson, Block}, encryption::Base64};
+use super::{block::{BlockJson, Block}, encryption::{Base64, AesEcb}};
 
 pub fn hash_generator(data: String) -> String {
   return sha256::digest(data);
@@ -56,10 +57,19 @@ pub fn save_block (block: &Block) -> Result<(), std::io::Error> {
   let mut file = File::create(file_name)
     .expect("Error while writing block info");
 
-  // TODO: Encrypt using AES ECB -> Using db_access_key
   let encoded_block = Base64::encode(block.try_to_vec().unwrap());
 
   file.write_all(encoded_block.as_bytes())
+
+  // --- NEW -- Criptografa o bloco inteiro -- NAO RECOMENDADO porque vai
+  // deteriorar a forma de ler os blocos, ja que alguns, nao serao acessiveis
+  // if db_access_key.is_some() {
+  //   let encrypted_tx_data = AesEcb::encode(&encoded_block, db_access_key.unwrap());
+  //   return file.write_all(encrypted_tx_data.as_bytes());
+  // }
+
+  // file.write_all(encoded_block.as_bytes())
+  
 }
 
 pub fn load_current_block () -> Option<Block> {
@@ -74,6 +84,9 @@ pub fn load_current_block () -> Option<Block> {
   let path_to_current_block = format!("data/{block_hash}.blk", block_hash = current_block_hash.unwrap());
   let current_block_data = read_to_string(path_to_current_block)
     .expect("Block hash not found");
+
+    // Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
+  
 
   // serde_json::from_str(&current_block_data).unwrap()
   Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())

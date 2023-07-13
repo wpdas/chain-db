@@ -3,8 +3,11 @@ use rocket::{post, serde::json::Json};
 use crate::kibi::{
   types::{ContractTransactionData, SecureContractTransactionData},
   utils::get_timestamp,
-  instance::BlockchainInstance
+  instance::BlockchainInstance, encryption::AesEcb
 };
+
+use borsh::BorshSerialize;
+use std::str;
 
 // TIP: '_ can be used to set the type as "unknown"
 
@@ -23,12 +26,25 @@ pub fn post(tx_data: Json<SecureContractTransactionData>, mine: u8) -> &'static 
     data: tx_data.0.data
   };
 
-  //Register encripted transaction
-  let stringified_tx_data = serde_json::to_string(&transaction).unwrap();
-  // let encripted_tx_data = encript(stringified_tx_data);
-  // TODO: Encrypt the tx_data here
+  // Register encripted transaction
+  let borsh_tx_data = transaction.try_to_vec().unwrap();
+  println!("SOFRIMENTO: {:?}", borsh_tx_data);
+  // let stringified_borsh_tx_data = str::from_utf8(&borsh_tx_data)
+  //   .unwrap()
+  //   .to_string();
 
-  BlockchainInstance::blockchain().add_new_transaction(stringified_tx_data);
+  let borsh_tx_str_vec: Vec<String> = borsh_tx_data.iter()
+    .map(|n| n.to_string())
+    .collect();
+
+  let stringified_borsh_tx_data = borsh_tx_str_vec.join(",");
+  // TODO: Continuar daqui
+
+  // Encrypt the transaction (data) using AesEcb + db_access_key
+  let encrypted_tx_data = AesEcb::encode(&stringified_borsh_tx_data, &tx_data.0.db_access_key);
+
+  // Register transaction
+  BlockchainInstance::blockchain().add_new_transaction(encrypted_tx_data);
 
   // Should mine?
   if mine == 1 {

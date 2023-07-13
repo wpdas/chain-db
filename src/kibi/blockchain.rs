@@ -1,6 +1,9 @@
+use borsh::BorshDeserialize;
+
 use crate::kibi::block::Block;
 use crate::kibi::utils::{hash_generator, DIFFICULTY};
 
+use super::encryption::AesEcb;
 use super::types::{ContractTransactionData, ContractTransactionDataJson};
 use super::utils::{save_current_block_hash, save_block, load_current_block, load_block, SEARCH_BLOCK_DEPTH, block_to_blockjson};
 
@@ -116,7 +119,8 @@ impl Blockchain {
 
   /**
    * Run over blocks to get the transactions under a specific contract
-   * Gets all data/transactions inside the contract
+   * Gets all data/transactions inside the contract(living inside blocks) and try
+   * to decrypt it using the given db_access_key, if it succeed, return the transaction
    * 
    * Preffer to use `get_last_transaction_data_under_contract` that's going to return
    * only one transaction/data (the most recent one)
@@ -170,12 +174,13 @@ impl Blockchain {
 
   /**
    * Run over blocks to get the last transaction data under a specific contract
-   * Gets the most recent data/transaction inside the contract
+   * Gets all data/transactions inside the contract(living inside blocks) and try
+   * to decrypt it using the given db_access_key, if it succeed, return the transaction
    * 
    * Preffer to use this method than `get_transactions_under_contract` that's going
    * to fetch all transactions under a contract. This is heavy.
    */
-  pub fn get_last_transaction_data_under_contract(&self, contract_id: String, depth: u64) -> Option<ContractTransactionDataJson> {
+  pub fn get_last_transaction_data_under_contract(&self, contract_id: String, db_access_key: &String, depth: u64) -> Option<ContractTransactionDataJson> {
     // TODO: the block decription should occur here;
     let current_block = load_current_block().unwrap();
     let mut prev_block_hash = current_block.prev_hash.to_owned();
@@ -191,20 +196,30 @@ impl Blockchain {
         let block = block_opt.unwrap();
 
         // decode transactions
-        let block_json = block_to_blockjson(&block);
-        for tx in block_json.transactions {
-            if tx["contract_id"].is_string() && tx["contract_id"] == contract_id {
+        // let block_json = block_to_blockjson(&block);
+        for encrypted_tx in block.transactions {
+            // Try to decrypt transaction using the given db_access_key
+            let tx_opt = AesEcb::decode(&encrypted_tx, &db_access_key);
+            if tx_opt.is_none() {
+                return None;
+            }
+            // Try decode using Borsh
+            let tx = ContractTransactionData::try_from_slice(
+                tx_opt.unwrap().as_bytes()
+            ).unwrap();
+            
+            if tx.contract_id == contract_id {
 
-                let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
+                // let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
 
                 // create json version from dec_tx
                 let dec_tx_json = ContractTransactionDataJson {
-                    tx_type: dec_tx.tx_type,
-                    contract_id: dec_tx.contract_id,
-                    timestamp: dec_tx.timestamp,
-                    data: serde_json::from_str(&dec_tx.data).unwrap(),
-                    block_hash: block_json.hash,
-                    block_height: block_json.height,
+                    tx_type: tx.tx_type,
+                    contract_id: tx.contract_id,
+                    timestamp: tx.timestamp,
+                    data: serde_json::from_str(&tx.data).unwrap(),
+                    block_hash: block.hash,
+                    block_height: block.height,
                   };
 
                 return Some(dec_tx_json);
@@ -254,8 +269,13 @@ impl Blockchain {
     block.compute_hash()
   }
 
+  /**
+   * Inser new transaction to be mined. This transaction is encrypted
+   * using the db_access_key. The same key should be provided in order to read
+   * the transaction information
+   */
   pub fn add_new_transaction(&mut self, transaction: String) {
-      self.unconfirmed_transactions.push(transaction);
+    self.unconfirmed_transactions.push(transaction);
   }
 
   pub fn mine(&mut self) -> MineReturnOptions {

@@ -26,7 +26,7 @@ type Aes256Ecb = Ecb<Aes256, Pkcs7>;
 pub struct AesEcb {}
 
 impl AesEcb {
-    pub fn encode(message: &'static str, key: &'static str) -> String {
+    pub fn encode(message: &String, key: &String) -> String {
       let message_bytes = message.as_bytes();
 
       let msg_blocks = message_bytes
@@ -37,33 +37,40 @@ impl AesEcb {
 
       let encrypted_msb_blocks: Vec<String> = msg_blocks.iter()
         .map(|msg_block| {
-          AesEcb::encrypt(&msg_block, key)
+          // AesEcb::encrypt(msg_block.to_owned(), "")
+          AesEcb::encrypt(&msg_block.to_string(), key)
         })
         .collect();
 
-      // println!("ENCODE: {:?}", encrypted_msb_blocks.join(";"));
       encrypted_msb_blocks.join(";")
     }
 
-    pub fn decode (encoded_message: &String, key: &'static str) {
-      let f = encoded_message.split(";")
+    pub fn decode (encoded_message: &String, key: &String) -> Option<String> {
+      let message_chunks = encoded_message.split(";")
         .collect::<Vec<&str>>();
 
-      let a: Vec<String> = f.iter()
+      let mut has_error = false;
+
+      let decrypted_msg: Vec<String> = message_chunks.iter()
       .map(|chunk| {
-        // println!("DECODE: {:?}", chunk);
-        // let foo = chunk.to_owned();
+        let decrypted_chunk = AesEcb::decrypt(&chunk.to_string(), key);
 
-        // let fa = AesEcb::decrypt(&foo, key);
+        if decrypted_chunk.is_none() {
+          has_error = true;
+          return "".to_string();
+        }
 
-        chunk
-
+        decrypted_chunk.unwrap()
       }).collect();
-      
-      println!("DECODE: {:?}", a);
+
+      if has_error {
+        return None;
+      }
+
+      Some(decrypted_msg.join(""))
     }
 
-    pub fn encrypt(message: &'static str, key: &'static str) -> String {
+    pub fn encrypt(message: &String, key: &String) -> String {
       let message_bytes = message.as_bytes();
       let key_bytes = hex::decode(key.as_bytes()).expect("Decoding failed");
       let iv = hex!("");
@@ -75,7 +82,7 @@ impl AesEcb {
       hex::encode(ciphertext)
     }
 
-    pub fn decrypt(message: &String, key: &'static str) -> Option<String> {
+    pub fn decrypt(message: &String, key: &String) -> Option<String> {
       let mut message_bytes = hex::decode(message).unwrap();
       let key_bytes = hex::decode(key.as_bytes()).expect("Decoding failed");
       let iv = hex!("");

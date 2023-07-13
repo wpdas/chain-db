@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshSerialize, BorshDeserialize, PartialEq, Clone)]
 pub enum TransactionType {
   NONE,
   ACCOUNT,
@@ -20,7 +21,7 @@ pub struct SecureContractTransactionData {
   pub data: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct ContractTransactionData {
   pub tx_type: TransactionType,
   pub contract_id: String,
