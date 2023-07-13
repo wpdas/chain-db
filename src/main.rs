@@ -4,6 +4,7 @@
 
 // Server - API
 extern crate rocket;
+use kibi::encryption::AesEcb;
 use rocket::{routes, launch, Config};
 
 mod routes;
@@ -15,6 +16,14 @@ mod kibi;
 fn rocket() -> _ {
     // Set PORT
     let figment = Config::figment().merge(("port", 2818));
+
+    let a1 = AesEcb::encode("fala mo kirido meu bagulho doido, assim assim, do jeito que tem que ser", "261a2abee90eb2e6dcbca892946613a8ab2d2674021a2c314df4abda92501a45");
+    println!("A1: {:?}", a1);
+    let a2 = AesEcb::decode(&a1, "261a2abee90eb2e6dcbca892946613a8ab2d2674021a2c314df4abda92501a45");
+    // let a = AesEcb::encrypt("fala mo kirido m", "261a2abee90eb2e6dcbca892946613a8ab2d2674021a2c314df4abda92501a45");
+    // println!("Encripted: {:?}", a);
+    // let b = AesEcb::decrypt(&a, "261a2abee90eb2e6dcbca892946613a8ab2d2674021a2c314df4abda92501a45");
+    // println!("Dencripted: {:?}", b);
 
     rocket::custom(figment)
         .mount("/", routes![routes::health_route::get])

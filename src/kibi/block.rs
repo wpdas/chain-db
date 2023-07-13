@@ -1,7 +1,7 @@
 use borsh::{BorshSerialize, BorshDeserialize};
 use serde::{Serialize, Deserialize};
 use serde_json::{self, Value};
-use crate::kibi::{utils::get_timestamp, crypto::Base64};
+use crate::kibi::{utils::get_timestamp, encryption::Base64};
 
 // #[derive(Debug, Clone, Serialize, Deserialize)]
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Clone)]

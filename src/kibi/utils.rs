@@ -1,11 +1,9 @@
-use borsh::{BorshSerialize, try_from_slice_with_schema, BorshDeserialize};
+use borsh::{BorshSerialize, BorshDeserialize};
 use serde_json::Value;
 use sha256;
-use std::{time::SystemTime, collections::HashMap, fs::{File, self, read_to_string}, io::{Write}, path::Path};
+use std::{time::SystemTime, fs::{File, self, read_to_string}, io::Write, path::Path};
 
-use crate::kibi::types::ContractTransactionData;
-
-use super::{block::{BlockJson, Block}, instance::BlockchainInstance, types::{Kibi, KibiFields, ContractTransactionDataJson}, crypto::Base64};
+use super::{block::{BlockJson, Block}, encryption::Base64};
 
 pub fn hash_generator(data: String) -> String {
   return sha256::digest(data);

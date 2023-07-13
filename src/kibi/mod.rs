@@ -3,4 +3,4 @@ pub mod blockchain;
 pub mod utils;
 pub mod instance;
 pub mod types;
-pub mod crypto;
+pub mod encryption;

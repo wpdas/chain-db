@@ -18,22 +18,4 @@ impl BlockchainInstance {
       BLOCKCHAIN.clone()
     }
   }
-
-  // pub fn add_new_transaction(transaction: String) {
-  //   unsafe {
-  //     BLOCKCHAIN.add_new_transaction(transaction)
-  //   }
-  // }
-
-  // pub fn get_chain() -> Vec<Block> {
-  //   unsafe {
-  //     return BLOCKCHAIN.chain(SEARCH_BLOCK_DEPTH).to_vec()
-  //   }
-  // }
-
-  // pub fn mine() -> MineReturnOptions {
-  //   unsafe {
-  //     return BLOCKCHAIN.mine()
-  //   }
-  // }
 }
