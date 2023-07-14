@@ -3,7 +3,6 @@
  */
 // Server - API
 extern crate rocket;
-use kibi::encryption::AesEcb;
 use rocket::{launch, routes, Config};
 
 mod routes;
@@ -45,4 +44,13 @@ fn rocket() -> _ {
         )
         .mount("/chain", routes![routes::get_chain::get])
         .mount("/mine", routes![routes::mine_unconfirmed_transactions::get])
+        // Create user account
+        .mount(
+            "/create_user_account",
+            routes![routes::create_user_account::post],
+        )
+        // Get user account (login check)
+        .mount("/get_user_account", routes![routes::get_user_account::get])
+        // Get user account by id
+        .mount("/get_user_account_by_id", routes![routes::get_user_account_by_id::get])
 }

@@ -1,7 +1,4 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use serde_json::Value;
 use sha256;
-use std::str;
 use std::{
     fs::{self, read_to_string, File},
     io::Write,
@@ -9,10 +6,7 @@ use std::{
     time::SystemTime,
 };
 
-use super::{
-    block::Block,
-    encryption::{AesEcb, Base64},
-};
+use super::block::Block;
 
 pub fn hash_generator(data: String) -> String {
     return sha256::digest(data);
@@ -23,29 +17,6 @@ pub fn get_timestamp() -> u64 {
     let duration = time.duration_since(SystemTime::UNIX_EPOCH).unwrap();
     duration.as_secs()
 }
-
-/**
- * Converts Block (stringified JSON transactions) to BlockJson data (parse JSON transactions)
- */
-// pub fn block_to_blockjson(block: &Block) -> BlockJson {
-//   // decode transactions
-//   let mut transaction_json: Vec<Value> = vec![];
-
-//   for transaction in &block.transactions {
-//     transaction_json.push(serde_json::from_str(transaction.as_str()).unwrap());
-//   }
-
-//   // create a BlockJson data
-//   BlockJson {
-//     height: block.height,
-//     nonce: block.nonce,
-//     timestamp: block.timestamp,
-//     hash: block.hash.clone(),
-//     prev_hash: block.prev_hash.clone(),
-//     // update with the decoded transactions (json format)
-//     transactions: transaction_json,
-//   }
-// }
 
 pub fn save_current_block_hash(buf: &[u8]) -> Result<(), std::io::Error> {
     // create "data" dir
@@ -70,7 +41,7 @@ pub fn save_block(block: &Block) -> Result<(), std::io::Error> {
 }
 
 pub fn get_current_block_hash() -> Option<String> {
-  let path_to_read = Path::new("data/cur-block.inf");
+    let path_to_read = Path::new("data/cur-block.inf");
     let current_block_hash = read_to_string(path_to_read);
 
     if current_block_hash.is_err() {
@@ -78,10 +49,7 @@ pub fn get_current_block_hash() -> Option<String> {
         return None;
     }
 
-    let path_to_current_block = format!(
-        "{block_hash}",
-        block_hash = current_block_hash.unwrap()
-    );
+    let path_to_current_block = format!("{block_hash}", block_hash = current_block_hash.unwrap());
 
     Some(path_to_current_block)
 }
@@ -89,10 +57,11 @@ pub fn get_current_block_hash() -> Option<String> {
 pub fn load_current_block() -> Option<Block> {
     let path_to_current_block = get_current_block_hash();
     if path_to_current_block.is_none() {
-      eprintln!("cur_block.inf file not found");
-      return None;
+        eprintln!("cur_block.inf file not found");
+        return None;
     }
-    let current_block_data = load_block(path_to_current_block.unwrap()).expect("Block hash not found");
+    let current_block_data =
+        load_block(path_to_current_block.unwrap()).expect("Block hash not found");
 
     Some(current_block_data)
 }

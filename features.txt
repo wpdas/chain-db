@@ -40,6 +40,9 @@ guardar chave e valor como: { user@email.com = hash_id do usuário }
 7 - Usar o db_access_key para encriptografar e decriptografar blocos
 8 - Criar testes
 9 - Tratar o que puder de unwrap()
+9 - Usar compressao de arquivo? (zip?)
+10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data
+11 - Implantar sistema de query?
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas
@@ -48,3 +51,14 @@ guardar chave e valor como: { user@email.com = hash_id do usuário }
 // Processo baseado no que gerou menos dados no final do arquivo
 Cripto: Recebe transaction -> serializa em borsh -> encriptografa usando AesEcb -> Salva no bloco -> Bloco encodado em json -> Bloco é salvo
         Le arquivo -> decriptografa usando AesEcb -> deserializa em borsh -> retorna em JSON
+
+
+---- APP DE EXEMPLO PARA DEMO ----
+1 - Tracking - Aplicativo para guardar posição de usuário/carro
+1.1 - Depois, poder ver o trajeto percorrido no maps
+
+2 - Delivery Tracking - Registra o lugar que um produto emprestado (de uma empresa) está.
+2.1 - É possivel ver todo o historico do produto, usuários que o alugaram, lugares onde
+pararam...
+
+3 - Traquear temperatura do dia para levantamento de relatorio semanal, mensal, anual...

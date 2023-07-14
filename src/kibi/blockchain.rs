@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::kibi::block::Block;
-use crate::kibi::utils::{hash_generator, DIFFICULTY, get_current_block_hash};
+use crate::kibi::utils::{get_current_block_hash, hash_generator, DIFFICULTY};
 
 use super::encryption::AesEcb;
 use super::types::{ContractTransactionData, ContractTransactionDataJson};
@@ -169,6 +169,69 @@ impl Blockchain {
     }
 
     /**
+     * Run over blocks to get the last transaction data under a specific contract
+     * Gets all data/transactions inside the contract(living inside blocks) and try
+     * to decrypt it using the given db_access_key, if it succeed, return the transaction
+     *
+     * Preffer to use this method than `get_transactions_under_contract` that's going
+     * to fetch all transactions under a contract. This is heavy.
+     *
+     * WARNING: This is going to go over the entire chain till find the needed contract.
+     */
+    pub fn get_last_transaction_under_contract_full_depth(
+        &self,
+        contract_id: String,
+        db_access_key: &String,
+    ) -> Option<ContractTransactionDataJson> {
+        let mut prev_block_hash = get_current_block_hash().unwrap();
+        let mut n = 0;
+
+        while n == 0 {
+            let block_opt = load_block(prev_block_hash.to_owned());
+
+            if block_opt.is_none() {
+                n = 1;
+                break;
+            }
+
+            let block = block_opt.unwrap();
+
+            // Decode transactions
+            for encrypted_tx in block.transactions {
+                // Try to decrypt transaction using the given db_access_key
+                let tx_opt = self.decrypt_transaction(encrypted_tx, db_access_key);
+                if tx_opt.is_some() {
+                    // Get the transaction obj
+                    let tx = tx_opt.unwrap();
+
+                    if tx.contract_id == contract_id {
+                        // let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
+
+                        // create json version from dec_tx
+                        let dec_tx_json = ContractTransactionDataJson {
+                            tx_type: tx.tx_type,
+                            contract_id: tx.contract_id,
+                            timestamp: tx.timestamp,
+                            data: serde_json::from_str(&tx.data).unwrap(),
+                            block_hash: block.hash,
+                            block_height: block.height,
+                        };
+
+                        return Some(dec_tx_json);
+                    }
+                }
+            }
+
+            // set the new prev_block_hash
+            prev_block_hash = block.prev_hash;
+
+            n += 1;
+        }
+
+        None
+    }
+
+    /**
      * Run over blocks to get the transactions under a specific contract
      * Gets all data/transactions inside the contract(living inside blocks) and try
      * to decrypt it using the given db_access_key, if it succeed, return the transaction
@@ -200,7 +263,6 @@ impl Blockchain {
                 // Try to decrypt transaction using the given db_access_key
                 let tx_opt = self.decrypt_transaction(encrypted_tx, db_access_key);
                 if tx_opt.is_some() {
-
                     // Get the transaction obj
                     let tx = tx_opt.unwrap();
 
@@ -248,8 +310,6 @@ impl Blockchain {
         let mut prev_block_hash = get_current_block_hash().unwrap();
         let mut n = 0;
 
-        println!("CCCCCC: {:?}", prev_block_hash);
-
         while n < depth {
             let block_opt = load_block(prev_block_hash.to_owned());
 
@@ -263,27 +323,25 @@ impl Blockchain {
             for encrypted_tx in block.transactions {
                 // Try to decrypt transaction using the given db_access_key
                 let tx_opt = self.decrypt_transaction(encrypted_tx, db_access_key);
-                if tx_opt.is_none() {
-                    return None;
-                }
+                if tx_opt.is_some() {
+                    // Get the transaction obj
+                    let tx = tx_opt.unwrap();
 
-                // Get the transaction obj
-                let tx = tx_opt.unwrap();
+                    if tx.contract_id == contract_id {
+                        // let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
 
-                if tx.contract_id == contract_id {
-                    // let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
+                        // create json version from dec_tx
+                        let dec_tx_json = ContractTransactionDataJson {
+                            tx_type: tx.tx_type,
+                            contract_id: tx.contract_id,
+                            timestamp: tx.timestamp,
+                            data: serde_json::from_str(&tx.data).unwrap(),
+                            block_hash: block.hash,
+                            block_height: block.height,
+                        };
 
-                    // create json version from dec_tx
-                    let dec_tx_json = ContractTransactionDataJson {
-                        tx_type: tx.tx_type,
-                        contract_id: tx.contract_id,
-                        timestamp: tx.timestamp,
-                        data: serde_json::from_str(&tx.data).unwrap(),
-                        block_hash: block.hash,
-                        block_height: block.height,
-                    };
-
-                    return Some(dec_tx_json);
+                        return Some(dec_tx_json);
+                    }
                 }
             }
 

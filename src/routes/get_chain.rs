@@ -13,7 +13,7 @@ pub struct ChainResponse {
 
 #[get("/")]
 pub fn get() -> Json<ChainResponse> {
-    let chain = BlockchainInstance::blockchain().chain(SEARCH_BLOCK_DEPTH);
+    let chain = BlockchainInstance::chain(SEARCH_BLOCK_DEPTH);
 
     let response = ChainResponse {
         length: chain.len(),

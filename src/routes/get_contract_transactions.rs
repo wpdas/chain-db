@@ -9,7 +9,7 @@ use crate::kibi::{
 
 #[get("/<contract_id>/<db_access_key>")]
 pub fn get(contract_id: String, db_access_key: String) -> Json<Vec<ContractTransactionDataJson>> {
-    let mut transactions = BlockchainInstance::blockchain().get_transactions_under_contract(
+    let mut transactions = BlockchainInstance::get_transactions_under_contract(
         contract_id,
         &db_access_key,
         SEARCH_BLOCK_DEPTH,

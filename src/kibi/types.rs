@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -39,20 +37,27 @@ pub struct ContractTransactionDataJson {
     pub block_height: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NewAccountData {
-    pub account: String,
-}
-
-// KiBi
-pub type KibiAccounts = HashMap<String, String>;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct KibiFields {
-    pub accounts: KibiAccounts,
+#[derive(Debug, Deserialize)]
+pub struct CreateAccountPayload {
+    pub db_access_key: String,
+    pub user_name: String,
+    pub password: String,
+    pub units: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Kibi {
-    pub kibi: KibiFields,
+pub struct TransferUnitsData {
+    pub tx_type: TransactionType,
+    pub contract_id: String,
+    pub db_access_key: String,
+    pub from: String,
+    pub to: String,
+    pub units: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserAccount {
+    pub id: String, // Used to refer the user
+    pub user_name: String,
+    pub units: u64,
 }
