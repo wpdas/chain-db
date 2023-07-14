@@ -1,6 +1,5 @@
 use crate::kibi::utils::get_timestamp;
 use serde::{Deserialize, Serialize};
-use serde_json::{self, Value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
@@ -11,17 +10,6 @@ pub struct Block {
     pub hash: String,
     pub prev_hash: String,
 }
-
-// struct to be used by client (server)
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// pub struct BlockJson {
-//   pub height: i64,
-//   pub nonce: i64,
-//   pub transactions: Vec<Value>, // JSON format (data)
-//   pub timestamp: u64,
-//   pub hash: String,
-//   pub prev_hash: String,
-// }
 
 impl Block {
     pub fn new(

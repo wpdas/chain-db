@@ -224,8 +224,6 @@ impl Blockchain {
 
             // set the new prev_block_hash
             prev_block_hash = block.prev_hash;
-
-            n += 1;
         }
 
         None
