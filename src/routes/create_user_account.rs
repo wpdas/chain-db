@@ -1,27 +1,37 @@
 use rocket::{post, serde::json::Json};
 
-use crate::kibi::{
-    instance::BlockchainInstance,
-    types::{ContractTransactionData, CreateAccountPayload, TransactionType, UserAccount},
-    utils::get_timestamp,
+use crate::{
+    core_tables::user_account::{UserAccountTable, USER_ACCOUNT_TABLE_NAME},
+    kibi::{
+        instance::BlockchainInstance,
+        types::{BasicResponse, ContractTransactionData, CreateAccountPayload, TransactionType},
+        utils::get_timestamp,
+    },
 };
 
+type Response = BasicResponse<UserAccountTable>;
+
 #[post("/", format = "json", data = "<tx_data>")]
-pub fn post(tx_data: Json<CreateAccountPayload>) -> String {
+pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     // Check fields
     if tx_data.user_name.is_empty()
         || tx_data.password.is_empty()
         || tx_data.db_access_key.is_empty()
     {
-        return "Invalid transaction data".to_string(); // 404
+        return Json(Response {
+            success: false,
+            error_msg: "Invalid transaction data".to_string(),
+            data: None,
+        });
     }
 
     // User ID = Contract ID based on user info (for CoreUserAccountTable)
     let contract_id = sha256::digest(format!(
-        "{db_key}{user_name}{user_pass}",
+        "{db_key}{user_name}{user_pass}{core_table_name}",
         db_key = tx_data.0.db_access_key,
         user_name = tx_data.0.user_name,
-        user_pass = tx_data.0.password
+        user_pass = tx_data.0.password,
+        core_table_name = USER_ACCOUNT_TABLE_NAME,
     ));
 
     // Check if user already exists, if so, just return its hash (id)
@@ -33,13 +43,17 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> String {
     if user_check_contract_payload.is_some() {
         let user_account_check = user_check_contract_payload.unwrap();
         let user_check_data =
-            serde_json::from_value::<UserAccount>(user_account_check.data).unwrap();
+            serde_json::from_value::<UserAccountTable>(user_account_check.data).unwrap();
         println!("User {:?} already exists", &user_check_data.user_name);
 
-        return user_check_data.id;
+        return Json(Response {
+            success: false,
+            error_msg: "".to_string(),
+            data: Some(user_check_data),
+        });
     }
 
-    let user_account = UserAccount {
+    let user_account = UserAccountTable {
         id: contract_id.clone(),
         user_name: tx_data.0.user_name,
         units: tx_data.0.units.unwrap_or(0),
@@ -57,5 +71,9 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> String {
     BlockchainInstance::add_new_transaction(transaction, &tx_data.0.db_access_key);
     BlockchainInstance::mine();
 
-    contract_id
+    return Json(Response {
+        success: false,
+        error_msg: "".to_string(),
+        data: Some(user_account),
+    });
 }

@@ -30,6 +30,13 @@ impl BlockchainInstance {
         unsafe { BLOCKCHAIN.get_transactions_under_contract(contract_id, db_access_key, depth) }
     }
 
+    pub fn get_transactions_under_contract_full_depth(
+        contract_id: String,
+        db_access_key: &String,
+    ) -> Vec<ContractTransactionDataJson> {
+        unsafe { BLOCKCHAIN.get_transactions_under_contract_full_depth(contract_id, db_access_key) }
+    }
+
     pub fn get_last_transaction_data_under_contract(
         contract_id: String,
         db_access_key: &String,

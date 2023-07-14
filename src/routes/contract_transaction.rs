@@ -8,8 +8,8 @@ use crate::kibi::{
 
 use std::str;
 
-#[post("/<mine>", format = "json", data = "<tx_data>")]
-pub fn post(tx_data: Json<SecureContractTransactionData>, mine: u8) -> &'static str {
+#[post("/", format = "json", data = "<tx_data>")]
+pub fn post(tx_data: Json<SecureContractTransactionData>) -> &'static str {
     // Check fields
     if tx_data.contract_id.is_empty() || tx_data.db_access_key.is_empty() {
         return "Invalid transaction data"; // 404
@@ -25,11 +25,7 @@ pub fn post(tx_data: Json<SecureContractTransactionData>, mine: u8) -> &'static 
 
     // Register transaction
     BlockchainInstance::add_new_transaction(transaction, &tx_data.0.db_access_key);
-
-    // Should mine?
-    if mine == 1 {
-        BlockchainInstance::mine();
-    }
+    BlockchainInstance::mine();
 
     "Success"
 }

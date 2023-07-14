@@ -1,13 +1,14 @@
 use rocket::{get, serde::json::Json};
 
-use crate::kibi::{
-    instance::BlockchainInstance,
-    types::UserAccount,
+use crate::{
+    core_tables::user_account::UserAccountTable,
+    kibi::{types::BasicResponse, utils::get_user_account_by_id},
 };
 
-#[get("/<user_name>/<user_pass>/<db_access_key>")]
-pub fn get(user_name: String, user_pass: String, db_access_key: String) -> Json<UserAccount> {
+type Response = BasicResponse<UserAccountTable>;
 
+#[get("/<user_name>/<user_pass>/<db_access_key>")]
+pub fn get(user_name: String, user_pass: String, db_access_key: String) -> Json<Response> {
     // User ID = Contract ID based on user info (for CoreUserAccountTable)
     let contract_id = sha256::digest(format!(
         "{db_key}{user_name}{user_pass}",
@@ -16,23 +17,18 @@ pub fn get(user_name: String, user_pass: String, db_access_key: String) -> Json<
         user_pass = user_pass,
     ));
 
-    let user_check_contract_payload =
-        BlockchainInstance::get_last_transaction_under_contract_full_depth(
-            contract_id,
-            &db_access_key,
-        );
-
-    if user_check_contract_payload.is_some() {
-        let tx = user_check_contract_payload.unwrap();
-        let tx_data = serde_json::from_value::<UserAccount>(tx.data).unwrap();
-        return Json(tx_data);
+    let user = get_user_account_by_id(contract_id, &db_access_key);
+    if user.is_some() {
+        return Json(Response {
+            success: true,
+            error_msg: "".to_string(),
+            data: user,
+        });
     }
 
-    Json(
-        UserAccount {
-            id: "".to_string(),
-            user_name: "".to_string(),
-            units: 0,
-        }
-    )
+    Json(Response {
+        success: false,
+        error_msg: "User not found".to_string(),
+        data: None,
+    })
 }

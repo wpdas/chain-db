@@ -5,10 +5,10 @@
 extern crate rocket;
 use rocket::{launch, routes, Config};
 
-mod routes;
-
 // Blockchain - Kibi (yes this is my blockchain name)
+mod core_tables;
 mod kibi;
+mod routes;
 
 #[launch]
 fn rocket() -> _ {
@@ -52,5 +52,20 @@ fn rocket() -> _ {
         // Get user account (login check)
         .mount("/get_user_account", routes![routes::get_user_account::get])
         // Get user account by id
-        .mount("/get_user_account_by_id", routes![routes::get_user_account_by_id::get])
+        .mount(
+            "/get_user_account_by_id",
+            routes![routes::get_user_account_by_id::get],
+        )
+        // Transfer units between users
+        .mount("/transfer_units", routes![routes::transfer_units::post])
+        // Get Transfer Record by user id
+        .mount(
+            "/get_transfer_by_user_id",
+            routes![routes::get_transfer_by_user_id::get],
+        )
+        // Get all Transfer Records by user id
+        .mount(
+            "/get_all_transfers_by_user_id",
+            routes![routes::get_all_transfers_by_user_id::get],
+        )
 }

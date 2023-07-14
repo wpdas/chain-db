@@ -46,18 +46,16 @@ pub struct CreateAccountPayload {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct TransferUnitsData {
-    pub tx_type: TransactionType,
-    pub contract_id: String,
+pub struct TransferUnitsPayload {
     pub db_access_key: String,
     pub from: String,
     pub to: String,
     pub units: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserAccount {
-    pub id: String, // Used to refer the user
-    pub user_name: String,
-    pub units: u64,
+#[derive(Serialize, Deserialize)]
+pub struct BasicResponse<D> {
+    pub success: bool,
+    pub error_msg: String,
+    pub data: Option<D>,
 }

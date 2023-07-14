@@ -6,7 +6,9 @@ use std::{
     time::SystemTime,
 };
 
-use super::block::Block;
+use crate::core_tables::user_account::UserAccountTable;
+
+use super::{block::Block, instance::BlockchainInstance};
 
 pub fn hash_generator(data: String) -> String {
     return sha256::digest(data);
@@ -79,6 +81,22 @@ pub fn load_block(block_hash: String) -> Option<Block> {
     }
 
     Some(serde_json::from_str(&current_block_data).unwrap())
+}
+
+/**
+ * Fetch the user account by its ID (contract_id for the given user)
+ */
+pub fn get_user_account_by_id(user_id: String, db_access_key: &String) -> Option<UserAccountTable> {
+    let user_check_contract_payload =
+        BlockchainInstance::get_last_transaction_under_contract_full_depth(user_id, db_access_key);
+
+    if user_check_contract_payload.is_some() {
+        let tx = user_check_contract_payload.unwrap();
+        let tx_data = serde_json::from_value::<UserAccountTable>(tx.data).unwrap();
+        return Some(tx_data);
+    }
+
+    None
 }
 
 // Difficulty of PoW algorithm
