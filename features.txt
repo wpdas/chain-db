@@ -44,9 +44,8 @@ prejudicar a memória se continuar no jeito atual. - DONE
 6.1 - Criar metodo para criar DB [salvar num core table] - IGNORADO
 6.2 - Criar método para checar se um DB existe
 6.3 - Create Account: Usar email para evitar a colisao de mesma conta
-Salva o email em um contrato/tabela (default) diferente para que seja possível
-fazer uma comparacao rapida e ver se o email já está sendo utilizado. Talvez
-guardar chave e valor como: { user@email.com = hash_id do usuário }
+Salva o user_name em um contrato/tabela (core-table) diferente para que seja possível
+fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DONE
 7 - Usar o db_access_key para encriptografar e decriptografar blocos - DONE
 8 - Criar testes
 9 - Tratar o que puder de unwrap()
@@ -56,7 +55,7 @@ guardar chave e valor como: { user@email.com = hash_id do usuário }
 12 - IMPORTANTE: porque estou serializando o data de transacoes com json?
 Eu sei que preciso passar o "data" como string, mas... talvez eu possa simplesmente
 mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado
-13 - Implementar feature para buscar transacoes by user_id - EM PROGRESSO
+13 - Implementar feature para buscar transacoes by user_id - DONE
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas

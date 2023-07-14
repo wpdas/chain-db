@@ -42,6 +42,7 @@ pub struct CreateAccountPayload {
     pub db_access_key: String,
     pub user_name: String,
     pub password: String,
+    pub password_hint: Option<String>,
     pub units: Option<u64>,
 }
 
