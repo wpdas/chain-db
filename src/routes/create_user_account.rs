@@ -8,7 +8,7 @@ use crate::{
     kibi::{
         instance::BlockchainInstance,
         types::{BasicResponse, ContractTransactionData, CreateAccountPayload, TransactionType},
-        utils::get_timestamp,
+        utils::get_timestamp, encryption::Base64VecU8,
     },
 };
 
@@ -28,12 +28,13 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
         });
     }
 
-    // UserNameTable should be stored using only the db_access_key + core_table_name, this is
+    // UserNameTable should be stored using only the db_access_key + user_name + core_table_name, this is
     // because the system need to have the hability to check if the user_name is already
     // taken when a new user tries to create an account.
     let user_name_check_contract_id = sha256::digest(format!(
-        "{db_key}{core_table_name}",
+        "{db_key}{user_name}{core_table_name}",
         db_key = tx_data.0.db_access_key,
+        user_name = tx_data.0.user_name,
         core_table_name = USER_NAME_TABLE_NAME
     ));
 
@@ -72,7 +73,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::ACCOUNT,
             contract_id: contract_id.clone(),
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_account).unwrap(),
+            data: Base64VecU8::encode(&user_account)
         },
         &tx_data.0.db_access_key,
     );
@@ -88,7 +89,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::CONTRACT,
             contract_id: user_name_check_contract_id,
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_name_record).unwrap(),
+            data: Base64VecU8::encode(&user_name_record)
         },
         &tx_data.0.db_access_key,
     );
