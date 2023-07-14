@@ -1,6 +1,6 @@
 pub mod block;
 pub mod blockchain;
-pub mod utils;
+pub mod encryption;
 pub mod instance;
 pub mod types;
-pub mod encryption;
+pub mod utils;

@@ -39,10 +39,12 @@ fazer uma comparacao rapida e ver se o email já está sendo utilizado. Talvez
 guardar chave e valor como: { user@email.com = hash_id do usuário }
 7 - Usar o db_access_key para encriptografar e decriptografar blocos
 8 - Criar testes
+9 - Tratar o que puder de unwrap()
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas
 // O Bloco é salvo em Base64 contendo dentro de si as transactions (encriptografas usando AesEcb)
 // Borsh é usado para gerar string de bytes, gera final menor que json
-Cripto: Recebe transaction -> serializa em borsh -> encriptografa usando AesEcb -> Salva no bloco -> Bloco encodado em Borsh -> Bloco é salvo
+// Processo baseado no que gerou menos dados no final do arquivo
+Cripto: Recebe transaction -> serializa em borsh -> encriptografa usando AesEcb -> Salva no bloco -> Bloco encodado em json -> Bloco é salvo
         Le arquivo -> decriptografa usando AesEcb -> deserializa em borsh -> retorna em JSON

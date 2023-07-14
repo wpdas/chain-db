@@ -1,114 +1,115 @@
-use borsh::{BorshSerialize, BorshDeserialize};
+use borsh::{BorshDeserialize, BorshSerialize};
 use serde_json::Value;
 use sha256;
-use std::{time::SystemTime, fs::{File, self, read_to_string}, io::Write, path::Path};
 use std::str;
+use std::{
+    fs::{self, read_to_string, File},
+    io::Write,
+    path::Path,
+    time::SystemTime,
+};
 
-use super::{block::{BlockJson, Block}, encryption::{Base64, AesEcb}};
+use super::{
+    block::Block,
+    encryption::{AesEcb, Base64},
+};
 
 pub fn hash_generator(data: String) -> String {
-  return sha256::digest(data);
+    return sha256::digest(data);
 }
 
 pub fn get_timestamp() -> u64 {
-  let time = SystemTime::now();
-  let duration = time.duration_since(SystemTime::UNIX_EPOCH).unwrap();
-  duration.as_secs()
+    let time = SystemTime::now();
+    let duration = time.duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    duration.as_secs()
 }
 
 /**
  * Converts Block (stringified JSON transactions) to BlockJson data (parse JSON transactions)
  */
-pub fn block_to_blockjson(block: &Block) -> BlockJson {
-  // decode transactions
-  let mut transaction_json: Vec<Value> = vec![];
+// pub fn block_to_blockjson(block: &Block) -> BlockJson {
+//   // decode transactions
+//   let mut transaction_json: Vec<Value> = vec![];
 
-  for transaction in &block.transactions {
-    transaction_json.push(serde_json::from_str(transaction.as_str()).unwrap());
-  }
+//   for transaction in &block.transactions {
+//     transaction_json.push(serde_json::from_str(transaction.as_str()).unwrap());
+//   }
 
-  // create a BlockJson data
-  BlockJson {
-    height: block.height,
-    nonce: block.nonce,
-    timestamp: block.timestamp,
-    hash: block.hash.clone(),
-    prev_hash: block.prev_hash.clone(),
-    // update with the decoded transactions (json format)
-    transactions: transaction_json,
-  }
+//   // create a BlockJson data
+//   BlockJson {
+//     height: block.height,
+//     nonce: block.nonce,
+//     timestamp: block.timestamp,
+//     hash: block.hash.clone(),
+//     prev_hash: block.prev_hash.clone(),
+//     // update with the decoded transactions (json format)
+//     transactions: transaction_json,
+//   }
+// }
+
+pub fn save_current_block_hash(buf: &[u8]) -> Result<(), std::io::Error> {
+    // create "data" dir
+    fs::create_dir_all("data")?;
+
+    let mut file = File::create("data/cur-block.inf").expect("Error while writing block info");
+
+    file.write_all(buf)
 }
 
-pub fn save_current_block_hash (buf: &[u8]) -> Result<(), std::io::Error> {
-  // create "data" dir
-  fs::create_dir_all("data")?;
+pub fn save_block(block: &Block) -> Result<(), std::io::Error> {
+    // create "data" dir
+    fs::create_dir_all("data")?;
 
-  let mut file = File::create("data/cur-block.inf")
-    .expect("Error while writing block info");
+    let file_name = format!("data/{block_hash}.blk", block_hash = block.hash);
+    let mut file = File::create(file_name).expect("Error while writing block info");
 
-  file.write_all(buf)
+    // Encoda em json simples pois é menor o tamanho do arquivo guardando o bloco
+    let block_json = serde_json::to_string(&block).unwrap();
+
+    file.write_all(block_json.as_bytes())
 }
 
-pub fn save_block (block: &Block) -> Result<(), std::io::Error> {
-  // create "data" dir
-  fs::create_dir_all("data")?;
-
-  let file_name = format!("data/{block_hash}.blk", block_hash = block.hash);
-  let mut file = File::create(file_name)
-    .expect("Error while writing block info");
-
-  let encoded_block = Base64::encode(block.try_to_vec().unwrap());
-
-  file.write_all(encoded_block.as_bytes())
-
-  // --- NEW -- Criptografa o bloco inteiro -- NAO RECOMENDADO porque vai
-  // deteriorar a forma de ler os blocos, ja que alguns, nao serao acessiveis
-  // if db_access_key.is_some() {
-  //   let encrypted_tx_data = AesEcb::encode(&encoded_block, db_access_key.unwrap());
-  //   return file.write_all(encrypted_tx_data.as_bytes());
-  // }
-
-  // file.write_all(encoded_block.as_bytes())
-  
-}
-
-pub fn load_current_block () -> Option<Block> {
+pub fn get_current_block_hash() -> Option<String> {
   let path_to_read = Path::new("data/cur-block.inf");
-  let current_block_hash = read_to_string(path_to_read);
+    let current_block_hash = read_to_string(path_to_read);
 
-  if current_block_hash.is_err() {
-    eprintln!("cur_block.inf file not found");
-    return None;
-  }
+    if current_block_hash.is_err() {
+        eprintln!("cur_block.inf file not found");
+        return None;
+    }
 
-  let path_to_current_block = format!("data/{block_hash}.blk", block_hash = current_block_hash.unwrap());
-  let current_block_data = read_to_string(path_to_current_block)
-    .expect("Block hash not found");
+    let path_to_current_block = format!(
+        "{block_hash}",
+        block_hash = current_block_hash.unwrap()
+    );
 
-    // Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
-  
-
-  // serde_json::from_str(&current_block_data).unwrap()
-  Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
+    Some(path_to_current_block)
 }
 
-pub fn load_block (block_hash: String) -> Option<Block> {
-  // Ignore block_hash = "0"
-  if block_hash == "0".to_string() {
-    return None;
-  }
+pub fn load_current_block() -> Option<Block> {
+    let path_to_current_block = get_current_block_hash();
+    if path_to_current_block.is_none() {
+      eprintln!("cur_block.inf file not found");
+      return None;
+    }
+    let current_block_data = load_block(path_to_current_block.unwrap()).expect("Block hash not found");
 
-  let path_to_block = format!("data/{block_hash}.blk", block_hash = block_hash);
-  
-  let current_block_data = read_to_string(path_to_block)
-    .expect("Block hash not found");
+    Some(current_block_data)
+}
 
-  if current_block_data == "0" {
-    return None;
-  }
+pub fn load_block(block_hash: String) -> Option<Block> {
+    // Ignore block_hash = "0"
+    if block_hash == "0".to_string() {
+        return None;
+    }
 
-  // Some(serde_json::from_str(&current_block_data).unwrap())
-  Some(Block::try_from_slice(Base64::decode(current_block_data).as_ref()).unwrap())
+    let path_to_block = format!("data/{block_hash}.blk", block_hash = block_hash);
+    let current_block_data = read_to_string(path_to_block).expect("Block hash not found");
+    if current_block_data == "0" {
+        return None;
+    }
+
+    Some(serde_json::from_str(&current_block_data).unwrap())
 }
 
 // Difficulty of PoW algorithm

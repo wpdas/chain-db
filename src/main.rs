@@ -1,11 +1,10 @@
 /**
  * Chain DB
  */
-
 // Server - API
 extern crate rocket;
 use kibi::encryption::AesEcb;
-use rocket::{routes, launch, Config};
+use rocket::{launch, routes, Config};
 
 mod routes;
 
@@ -25,18 +24,25 @@ fn rocket() -> _ {
 
     // if a2.is_some() {
     //     println!("A2: {:?}", a2);
-    //     println!("Eq: {:?}", a2.expect("Error decoding") == msg.to_string());   
+    //     println!("Eq: {:?}", a2.expect("Error decoding") == msg.to_string());
     // }
 
     rocket::custom(figment)
         .mount("/", routes![routes::health_route::get])
-        .mount("/post_contract_transaction", routes![routes::contract_transaction::post])
+        .mount(
+            "/post_contract_transaction",
+            routes![routes::contract_transaction::post],
+        )
         // Returns the most recent transaction only under a specific contract
-        .mount("/get_last_contract_transaction", routes![routes::get_contract_transaction::get])
+        .mount(
+            "/get_last_contract_transaction",
+            routes![routes::get_contract_transaction::get],
+        )
         // Return a list of transactions under a specific contract
-        .mount("/get_contract_transactions", routes![routes::get_contract_transactions::get])
+        .mount(
+            "/get_contract_transactions",
+            routes![routes::get_contract_transactions::get],
+        )
         .mount("/chain", routes![routes::get_chain::get])
         .mount("/mine", routes![routes::mine_unconfirmed_transactions::get])
-
-    
 }
