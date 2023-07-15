@@ -49,7 +49,7 @@ fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DO
 7 - Usar o db_access_key para encriptografar e decriptografar blocos - DONE
 8 - Criar testes
 9 - Tratar o que puder de unwrap()
-9 - Usar compressao de arquivo? (zip?)
+9 - Usar compressao de arquivo? (zip?) - EM PROGRESSO
 10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data
 11 - Implantar sistema de query?
 12 - IMPORTANTE: porque estou serializando o data de transacoes com json?
@@ -62,8 +62,9 @@ mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado
 // O Bloco é salvo em Base64 contendo dentro de si as transactions (encriptografas usando AesEcb)
 // Borsh é usado para gerar string de bytes, gera final menor que json
 // Processo baseado no que gerou menos dados no final do arquivo
-Cripto: Recebe transaction -> serializa em borsh -> encriptografa usando AesEcb -> Salva no bloco -> Bloco encodado em json -> Bloco é salvo
-        Le arquivo -> decriptografa usando AesEcb -> deserializa em borsh -> retorna em JSON
+
+[IMPORTANTE] Nao é possivel user Borsh por causa da estruta de dados. As vezes o dado da transacao é desconhecido
+pelo sistema, ja que ele vem do client.
 
 
 ---- APP DE EXEMPLO PARA DEMO ----
@@ -75,3 +76,8 @@ Cripto: Recebe transaction -> serializa em borsh -> encriptografa usando AesEcb 
 pararam...
 
 3 - Traquear temperatura do dia para levantamento de relatorio semanal, mensal, anual...
+
+
+
+IMPORTANTE: Corrigir o problema de converter Vec<u8> em string literalmente números.
+Usar o Base64VecU8 pra isso. Vai diminuir o tamanho do dado encriptografado.

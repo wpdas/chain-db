@@ -6,8 +6,6 @@ use crate::kibi::{
     utils::get_timestamp,
 };
 
-use std::str;
-
 #[post("/", format = "json", data = "<tx_data>")]
 pub fn post(tx_data: Json<SecureContractTransactionData>) -> &'static str {
     // Check fields
@@ -21,10 +19,6 @@ pub fn post(tx_data: Json<SecureContractTransactionData>) -> &'static str {
         contract_id: tx_data.0.contract_id,
         timestamp: Some(get_timestamp()),
         data: tx_data.0.data,
-
-        // NOTE: Parei aqui, tenho que pensar em como converter o dado para BORSH, se possivel,
-        // sem ter que fazer isso no chain-db-rust (kib-cli-rust).
-        // Talvez gerando um JSON e convertendo para BORSH anonimamente? (nao sei se é possível)
     };
 
     // Register transaction

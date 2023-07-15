@@ -73,7 +73,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::ACCOUNT,
             contract_id: contract_id.clone(),
             timestamp: Some(get_timestamp()),
-            data: Base64VecU8::encode(&user_account)
+            data: serde_json::to_string(&user_account).unwrap()
         },
         &tx_data.0.db_access_key,
     );
@@ -89,7 +89,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::CONTRACT,
             contract_id: user_name_check_contract_id,
             timestamp: Some(get_timestamp()),
-            data: Base64VecU8::encode(&user_name_record)
+            data: serde_json::to_string(&user_name_record).unwrap()
         },
         &tx_data.0.db_access_key,
     );
@@ -98,7 +98,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     BlockchainInstance::mine();
 
     return Json(Response {
-        success: false,
+        success: true,
         error_msg: "".to_string(),
         data: Some(user_account),
     });

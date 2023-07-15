@@ -1,9 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
 use crate::kibi::block::Block;
+use crate::kibi::encryption::Base64;
 use crate::kibi::utils::{get_current_block_hash, hash_generator, DIFFICULTY};
 
-use super::encryption::AesEcb;
+use super::encryption::{AesEcb, Base64VecU8};
 use super::types::{ContractTransactionData, ContractTransactionDataJson};
 use super::utils::{
     load_block, load_current_block, save_block, save_current_block_hash, SEARCH_BLOCK_DEPTH,
@@ -125,17 +126,10 @@ impl Blockchain {
         transaction: &ContractTransactionData,
         db_access_key: &String,
     ) -> String {
-        // 1 - Borsh serialize
-        let borsh_tx_data = transaction.try_to_vec().unwrap();
-
-        // 2 - vec<u8> to vec<String>
-        let borsh_tx_str_vec: Vec<String> = borsh_tx_data.iter().map(|n| n.to_string()).collect();
-
-        // 3 - vec<String> to String
-        let stringified_borsh_tx_data = borsh_tx_str_vec.join(",");
-
-        // 4 - Encrypt the transaction (data) using AesEcb + db_access_key
-        AesEcb::encode(&stringified_borsh_tx_data, &db_access_key)
+        // 1 - JSON serialize
+        let borsh_tx_data = serde_json::to_string(transaction).unwrap();
+        // 2 - Encrypt using AesEcb
+        AesEcb::encode(&borsh_tx_data, &db_access_key)
     }
 
     /**
@@ -146,25 +140,17 @@ impl Blockchain {
         encrypted_data: String,
         db_access_key: &String,
     ) -> Option<ContractTransactionData> {
-        // 1 - Encrypt the transaction (data) using AesEcb + db_access_key
+        // 1 - Dencrypt the transaction (data) using AesEcb + db_access_key
         let decoded_tx_opt = AesEcb::decode(&encrypted_data, &db_access_key);
 
         if decoded_tx_opt.is_none() {
             return None;
         }
 
-        // 2 - String to vec<String> (Borsh)
-        let decoded_tx = decoded_tx_opt.unwrap();
-        let borsh_tx_str_vec = decoded_tx.split(",").collect::<Vec<&str>>();
+        let decoded_tx: String = decoded_tx_opt.unwrap();
 
-        // 3 - vec<String> (Borsh) to vec<u8>;
-        let borsh_tx_data: Vec<u8> = borsh_tx_str_vec
-            .iter()
-            .map(|n| n.parse::<u8>().unwrap())
-            .collect();
-
-        // 4 - Recover Transaction from borsh_tx_data
-        let transaction = ContractTransactionData::try_from_slice(&borsh_tx_data).unwrap();
+        // JSON deserialize
+        let transaction = serde_json::from_str::<ContractTransactionData>(&decoded_tx).unwrap();
         Some(transaction)
     }
 
@@ -205,9 +191,6 @@ impl Blockchain {
                     let tx = tx_opt.unwrap();
 
                     if tx.contract_id == contract_id {
-                        // let dec_tx = serde_json::from_value::<ContractTransactionData>(tx).unwrap();
-
-                        // create json version from dec_tx
                         let dec_tx_json = ContractTransactionDataJson {
                             tx_type: tx.tx_type,
                             contract_id: tx.contract_id,
