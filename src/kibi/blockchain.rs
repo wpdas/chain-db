@@ -1,10 +1,11 @@
 use crate::kibi::block::Block;
 use crate::kibi::utils::{get_current_block_hash, hash_generator, DIFFICULTY};
 
-use super::encryption::{AesEcb};
+use super::encryption::AesEcb;
 use super::types::{ContractTransactionData, ContractTransactionDataJson};
 use super::utils::{
-    load_block, load_current_block, save_block, save_current_block_hash, SEARCH_BLOCK_DEPTH, USE_AESECB_ENCRYPTION,
+    load_block, load_current_block, save_block, save_current_block_hash, SEARCH_BLOCK_DEPTH,
+    USE_AESECB_ENCRYPTION,
 };
 
 // A way to inform the kinds of data for a given method
@@ -159,7 +160,7 @@ impl Blockchain {
             Some(transaction)
         } else {
             // Without AesEcb encryption
-            Some(serde_json::from_str::<ContractTransactionData>(&encrypted_data).unwrap())   
+            Some(serde_json::from_str::<ContractTransactionData>(&encrypted_data).unwrap())
         }
     }
 

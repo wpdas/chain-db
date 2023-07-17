@@ -37,32 +37,33 @@ de dentro da blockchain.
 
 --- pendente
 
-1 - Criar recurso para transferencia de units (entre contas);
+1 - Criar recurso para transferencia de units (entre contas); - DONE
 2 - CLI deve usar o recurso de Result, Error para chamadas;
 3 - Gerar os .blk usando algum tipo de assinatura, assim nao fica facil
-decompilar o arquivo. (pub / priv key).
-4 - Remover o uso do Lazy (náo é necessario)
+decompilar o arquivo. - FEITO USANDO AesEcb (default, ativado = false) - DONE
+4 - Remover o uso do Lazy (náo é necessario) - É NECESSARIO AINDA - DONE
 5 - get_chain() -> deve ter um filtro para buscar os blocos até achar o valor,
 e não buscar todos os blocos, alocar em memoria e depois fazer a busca. Isso vai 
 prejudicar a memória se continuar no jeito atual. - DONE
 
 6 - Criar os core contracts dentro da pasta/mod "core_tables" - DONE
 6.1 - Criar metodo para criar DB [salvar num core table] - IGNORADO
-6.2 - Criar método para checar se um DB existe
-6.3 - Create Account: Usar email para evitar a colisao de mesma conta
+6.2 - Criar método para checar se um DB existe - NAO NECESSÁRIO, O USUARIO
+DEVE SABER QUE OS DADOS DE ACESSO SAO A CHAVE, SE PERDER OU ERRA DEPOIS, PERDE ACESSO
+AOS DADOS. Cada banco é gerado a partir desses dados iniciais. - DONE
+6.3 - Create Account: Usar email para evitar a colisao de mesma conta - IGNORADO
 Salva o user_name em um contrato/tabela (core-table) diferente para que seja possível
 fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DONE
 7 - Usar o db_access_key para encriptografar e decriptografar blocos - DONE
 8 - Criar testes
 9 - Tratar o que puder de unwrap()
 9 - Usar compressao de arquivo? (zip?) - FEITO, MAS NAO COMPENSA. REMOVIDO!
-10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data
+10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data - DONE
 11 - Implantar sistema de query?
 12 - IMPORTANTE: porque estou serializando o data de transacoes com json?
 Eu sei que preciso passar o "data" como string, mas... talvez eu possa simplesmente
-mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado
+mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado - MELHOR JSON - DONE
 13 - Implementar feature para buscar transacoes by user_id - DONE
-14 - Remover tudo de Borsh
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas

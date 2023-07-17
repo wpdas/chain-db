@@ -3,7 +3,7 @@ use base64::{engine::general_purpose, Engine as _};
 use aes::Aes256;
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Ecb};
-use borsh::{BorshSerialize, BorshDeserialize};
+use borsh::{BorshDeserialize, BorshSerialize};
 use hex_literal::hex;
 use std::str;
 
@@ -17,18 +17,26 @@ impl Base64 {
     }
 
     pub fn decode(encoded_data: String) -> Vec<u8> {
-        general_purpose::STANDARD_NO_PAD.decode(&encoded_data).unwrap()
+        general_purpose::STANDARD_NO_PAD
+            .decode(&encoded_data)
+            .unwrap()
     }
 }
 
 pub struct Base64VecU8;
 
 impl Base64VecU8 {
-    pub fn encode<T>(data: T) -> String where T: BorshSerialize,  {
+    pub fn encode<T>(data: T) -> String
+    where
+        T: BorshSerialize,
+    {
         Base64::encode(data.try_to_vec().unwrap())
     }
 
-    pub fn decode<T>(encoded_data: String) -> T where T: BorshDeserialize {
+    pub fn decode<T>(encoded_data: String) -> T
+    where
+        T: BorshDeserialize,
+    {
         let decoded_data = Base64::decode(encoded_data);
         T::try_from_slice(&decoded_data).unwrap()
     }
@@ -41,12 +49,11 @@ fn base64vecu8_test() {
         user_name: String::from("Pimpolho.louco"),
         units: 21,
     };
-    
+
     let encoded_user = Base64VecU8::encode(&user);
     let decoded_user: UserAccountTable = Base64VecU8::decode(encoded_user);
     assert_eq!(user, decoded_user);
 }
-
 
 // AES ECB
 const BITS: usize = 64; // change to 128

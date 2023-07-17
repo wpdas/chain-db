@@ -6,9 +6,10 @@ use crate::{
         user_name::{UserNameTable, USER_NAME_TABLE_NAME},
     },
     kibi::{
+        encryption::Base64VecU8,
         instance::BlockchainInstance,
         types::{BasicResponse, ContractTransactionData, CreateAccountPayload, TransactionType},
-        utils::get_timestamp, encryption::Base64VecU8,
+        utils::get_timestamp,
     },
 };
 
@@ -73,7 +74,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::ACCOUNT,
             contract_id: contract_id.clone(),
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_account).unwrap()
+            data: serde_json::to_string(&user_account).unwrap(),
         },
         &tx_data.0.db_access_key,
     );
@@ -89,7 +90,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
             tx_type: TransactionType::CONTRACT,
             contract_id: user_name_check_contract_id,
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_name_record).unwrap()
+            data: serde_json::to_string(&user_name_record).unwrap(),
         },
         &tx_data.0.db_access_key,
     );

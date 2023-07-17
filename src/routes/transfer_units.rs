@@ -3,9 +3,10 @@ use rocket::{post, serde::json::Json};
 use crate::{
     core_tables::transfer_units::{TransferUnitsTable, TRANSFER_UNITS_TABLE_NAME},
     kibi::{
+        encryption::Base64VecU8,
         instance::BlockchainInstance,
         types::{BasicResponse, ContractTransactionData, TransactionType, TransferUnitsPayload},
-        utils::{get_timestamp, get_user_account_by_id}, encryption::Base64VecU8,
+        utils::{get_timestamp, get_user_account_by_id},
     },
 };
 
@@ -86,7 +87,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
             tx_type: TransactionType::TRANSFER,
             contract_id: contract_id_tx_registry_from,
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&transfer_units).unwrap()
+            data: serde_json::to_string(&transfer_units).unwrap(),
         },
         &tx_data.0.db_access_key,
     );
@@ -104,7 +105,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
             tx_type: TransactionType::TRANSFER,
             contract_id: contract_id_tx_registry_to,
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&transfer_units).unwrap()
+            data: serde_json::to_string(&transfer_units).unwrap(),
         },
         &tx_data.0.db_access_key,
     );
@@ -115,7 +116,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
             tx_type: TransactionType::TRANSFER,
             contract_id: user_from_data.id.clone(),
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_from_data).unwrap()
+            data: serde_json::to_string(&user_from_data).unwrap(),
         },
         &tx_data.0.db_access_key,
     );
@@ -126,7 +127,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
             tx_type: TransactionType::TRANSFER,
             contract_id: user_to_data.id.clone(),
             timestamp: Some(get_timestamp()),
-            data: serde_json::to_string(&user_to_data).unwrap()
+            data: serde_json::to_string(&user_to_data).unwrap(),
         },
         &tx_data.0.db_access_key,
     );
