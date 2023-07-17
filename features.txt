@@ -33,6 +33,7 @@ entre dois usuarios e buscar dados do usuário.
 um bloco que por sua vez é salvo.
 13.1 - Quando uma tabela (struct) é inicializada, seu estado de dado mais recente é lido
 de dentro da blockchain.
+14 - Os dados salvos são imutáveis (blocos e suas transações nao podem ser alterados)
 
 
 --- pendente
