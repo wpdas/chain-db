@@ -64,6 +64,9 @@ fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DO
 Eu sei que preciso passar o "data" como string, mas... talvez eu possa simplesmente
 mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado - MELHOR JSON - DONE
 13 - Implementar feature para buscar transacoes by user_id - DONE
+14 - Remover logs do rocket
+15 - Gerar documentação com Postman ou apenas no Readme
+16 - Criar ChainDB-Rust (lib)
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas

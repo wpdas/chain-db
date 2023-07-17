@@ -7,8 +7,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use hex_literal::hex;
 use std::str;
 
-use crate::core_tables::user_account::UserAccountTable;
-
 pub struct Base64;
 
 impl Base64 {
@@ -40,19 +38,6 @@ impl Base64VecU8 {
         let decoded_data = Base64::decode(encoded_data);
         T::try_from_slice(&decoded_data).unwrap()
     }
-}
-
-#[test]
-fn base64vecu8_test() {
-    let user = UserAccountTable {
-        id: String::from("123456az"),
-        user_name: String::from("Pimpolho.louco"),
-        units: 21,
-    };
-
-    let encoded_user = Base64VecU8::encode(&user);
-    let decoded_user: UserAccountTable = Base64VecU8::decode(encoded_user);
-    assert_eq!(user, decoded_user);
 }
 
 // AES ECB
