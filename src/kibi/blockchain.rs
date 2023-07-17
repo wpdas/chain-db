@@ -1,13 +1,10 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-
 use crate::kibi::block::Block;
-use crate::kibi::encryption::Base64;
 use crate::kibi::utils::{get_current_block_hash, hash_generator, DIFFICULTY};
 
-use super::encryption::{AesEcb, Base64VecU8};
+use super::encryption::{AesEcb};
 use super::types::{ContractTransactionData, ContractTransactionDataJson};
 use super::utils::{
-    load_block, load_current_block, save_block, save_current_block_hash, SEARCH_BLOCK_DEPTH,
+    load_block, load_current_block, save_block, save_current_block_hash, SEARCH_BLOCK_DEPTH, USE_AESECB_ENCRYPTION,
 };
 
 // A way to inform the kinds of data for a given method
@@ -126,10 +123,16 @@ impl Blockchain {
         transaction: &ContractTransactionData,
         db_access_key: &String,
     ) -> String {
-        // 1 - JSON serialize
-        let borsh_tx_data = serde_json::to_string(transaction).unwrap();
-        // 2 - Encrypt using AesEcb
-        AesEcb::encode(&borsh_tx_data, &db_access_key)
+        // With AesEcb encryption - (WARNING: produces files 50% larger)
+        if USE_AESECB_ENCRYPTION {
+            // 1 - JSON serialize
+            let borsh_tx_data = serde_json::to_string(transaction).unwrap();
+            // 2 - Encrypt using AesEcb
+            AesEcb::encode(&borsh_tx_data, &db_access_key)
+        } else {
+            // Without AesEcb encryption
+            serde_json::to_string(transaction).unwrap()
+        }
     }
 
     /**
@@ -140,18 +143,24 @@ impl Blockchain {
         encrypted_data: String,
         db_access_key: &String,
     ) -> Option<ContractTransactionData> {
-        // 1 - Dencrypt the transaction (data) using AesEcb + db_access_key
-        let decoded_tx_opt = AesEcb::decode(&encrypted_data, &db_access_key);
+        // With AesEcb encryption - (WARNING: produces files 50% larger)
+        if USE_AESECB_ENCRYPTION {
+            // 1 - Dencrypt the transaction (data) using AesEcb + db_access_key
+            let decoded_tx_opt = AesEcb::decode(&encrypted_data, &db_access_key);
 
-        if decoded_tx_opt.is_none() {
-            return None;
+            if decoded_tx_opt.is_none() {
+                return None;
+            }
+
+            let decoded_tx: String = decoded_tx_opt.unwrap();
+
+            // JSON deserialize
+            let transaction = serde_json::from_str::<ContractTransactionData>(&decoded_tx).unwrap();
+            Some(transaction)
+        } else {
+            // Without AesEcb encryption
+            Some(serde_json::from_str::<ContractTransactionData>(&encrypted_data).unwrap())   
         }
-
-        let decoded_tx: String = decoded_tx_opt.unwrap();
-
-        // JSON deserialize
-        let transaction = serde_json::from_str::<ContractTransactionData>(&decoded_tx).unwrap();
-        Some(transaction)
     }
 
     /**

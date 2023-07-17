@@ -3,21 +3,17 @@
 
 1 - [P] Criar Modelo de Tabelas como Contrato Inteligente;
 2 - [P] A porta principal do ChainDB é o 2818;
-2 - Cada bloco é salvo no disco;
-3 - Quando é requisitado leitura de blocos, eles são lidos do disco e postos na memoria
+3 - Cada bloco é salvo no disco;
+4 - Quando é requisitado leitura de blocos, eles são lidos do disco e postos na memoria
 enquanto o processo durar.
-4 - Uma referencia do último bloco é guardado no arquivo "data/cur-block.inf". Isso é feito
+5 - Uma referencia do último bloco é guardado no arquivo "data/cur-block.inf". Isso é feito
 para que seja possível saber a partir de qual bloco os dados devem ser lidos ou novos blocos
 criados.
-5 - Usando Borsh para serializar o bloco (produz arquivo menor que json e suporta mais tipos
-de dados)
-6 - Cada bloco é salvo num arquivo .blk;
-7 - A referencia do ultimo bloco fica salvo no arquivo cur-block.inf;
-8 - O sistema (core) sempre tentará usar o db_access_key para
-encriptografar / decriptografar os blocos
-8.1 - Caso um dado nao seja corretamente decompilado (por erro de chave), é retornado
+6 - Usando JSON para serializar o bloco;
+7 - Cada bloco é salvo num arquivo .blk;
+9.1 - Caso um dado nao seja corretamente decompilado (por erro de chave), é retornado
 um aviso de "Banco de Dados não existe na rede"
-9 - Transferencia de unidades:
+10 - Transferencia de unidades:
 // Dados de transferencia - ser executado
 // 1 - TransferUnitsData: from, to, units
 // 1.1 - FROM: Salva sob o contrato hash(db_access_key + user_from_id + "core-transfer-table");
@@ -26,7 +22,17 @@ um aviso de "Banco de Dados não existe na rede"
 // o db_access_key + user_from_id.]
 // 2 - Cria transação para atualizacao de units para FROM;
 // 3 - Cria transaçao para atualizacao de units para para TO;
-10 - Dados criptografados, somente quem gera o dado, tem controle sobre ele;
+11 - Dados criptografados, somente quem gera o dado, tem controle sobre ele;
+11.1 - Criptografia é opcional. Deafult de ativação = false;
+11.2 - Quando ativado, o dado gerado é quase 50% maior que o dado sem criptografia adicional;
+11.3 - var no sistema para ativação ou não: USE_AESECB_ENCRYPTION;
+11.4 - O sistema (core) usará o db_access_key para encriptografar / decriptografar os blocos;
+12 - Ações default do sistema: criar conta de usuário, fazer transferencia de unidades
+entre dois usuarios e buscar dados do usuário.
+13 - Cada tabela é gerada usando um struct que quando persistido, gera uma transação dentro de
+um bloco que por sua vez é salvo.
+13.1 - Quando uma tabela (struct) é inicializada, seu estado de dado mais recente é lido
+de dentro da blockchain.
 
 
 --- pendente
@@ -49,13 +55,14 @@ fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DO
 7 - Usar o db_access_key para encriptografar e decriptografar blocos - DONE
 8 - Criar testes
 9 - Tratar o que puder de unwrap()
-9 - Usar compressao de arquivo? (zip?) - EM PROGRESSO
+9 - Usar compressao de arquivo? (zip?) - FEITO, MAS NAO COMPENSA. REMOVIDO!
 10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data
 11 - Implantar sistema de query?
 12 - IMPORTANTE: porque estou serializando o data de transacoes com json?
 Eu sei que preciso passar o "data" como string, mas... talvez eu possa simplesmente
 mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado
 13 - Implementar feature para buscar transacoes by user_id - DONE
+14 - Remover tudo de Borsh
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas

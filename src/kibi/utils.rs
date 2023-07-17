@@ -1,4 +1,3 @@
-use smaz::{compress,decompress};
 use sha256;
 use std::{
     fs::{self, read_to_string, File},
@@ -39,10 +38,6 @@ pub fn save_block(block: &Block) -> Result<(), std::io::Error> {
 
     // Encoda em json simples pois é menor o tamanho do arquivo guardando o bloco
     let block_json = serde_json::to_string(&block).unwrap();
-
-    // let compr = compress(&block_json.as_bytes());
-    // println!("RAW: {:?} --- {:?}", block_json.as_bytes(), block_json.as_bytes().len());
-    // println!("COM: {:?} --- {:?}", compr, compr.len());
 
     file.write_all(block_json.as_bytes())
 }
@@ -110,3 +105,6 @@ pub const DIFFICULTY: usize = 2;
 
 // Default depth (how many to load) of blocks (used to get the blocks)
 pub const SEARCH_BLOCK_DEPTH: u64 = 1000;
+
+// Use AesEcb Encryption / Decryption (default = false)
+pub const USE_AESECB_ENCRYPTION: bool = false;
