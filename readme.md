@@ -8,7 +8,7 @@
   
   <h3>
     <!-- <a href="https://borsh.io">Website</a> -->
-    <a href="https://github.com/wpdas/chain-db#benchmarks">About</a>
+    <a href="https://github.com/wpdas/chain-db">About</a>
     <span> | </span>
     <a href="https://github.com/wpdas/chain-db#librariesclient">Specification</a>
   </h3>
