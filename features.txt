@@ -70,6 +70,7 @@ mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado - MELH
 15 - Gerar documentação com Postman ou apenas no Readme
 16 - Criar ChainDB-Rust (lib) - DONE
 17 - Fazer checagem pra ver se o ChainDB está sendo executado (usando rota "health_route")
+18 - Fazer teste de estresse
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas
