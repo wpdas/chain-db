@@ -3,8 +3,7 @@ use rocket::{post, serde::json::Json};
 use crate::{
     core_tables::transfer_units::{TransferUnitsTable, TRANSFER_UNITS_TABLE_NAME},
     kibi::{
-        encryption::Base64VecU8,
-        instance::BlockchainInstance,
+        blockchain::Blockchain,
         types::{BasicResponse, ContractTransactionData, TransactionType, TransferUnitsPayload},
         utils::{get_timestamp, get_user_account_by_id},
     },
@@ -12,6 +11,9 @@ use crate::{
 
 #[post("/", format = "json", data = "<tx_data>")]
 pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> {
+    // Blockchain
+    let mut blockchain = Blockchain::new();
+
     // Check fields
     if tx_data.db_access_key.is_empty() || tx_data.from.is_empty() || tx_data.to.is_empty() {
         return Json(BasicResponse {
@@ -82,7 +84,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
         user_id = user_from_data.id,
         core_table_name = TRANSFER_UNITS_TABLE_NAME
     ));
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::TRANSFER,
             contract_id: contract_id_tx_registry_from,
@@ -100,7 +102,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
         user_id = user_to_data.id,
         core_table_name = TRANSFER_UNITS_TABLE_NAME
     ));
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::TRANSFER,
             contract_id: contract_id_tx_registry_to,
@@ -111,7 +113,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
     );
 
     // 2
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::TRANSFER,
             contract_id: user_from_data.id.clone(),
@@ -122,7 +124,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
     );
 
     // 3
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::TRANSFER,
             contract_id: user_to_data.id.clone(),
@@ -133,7 +135,7 @@ pub fn post(tx_data: Json<TransferUnitsPayload>) -> Json<BasicResponse<String>> 
     );
 
     // Mine transactions
-    BlockchainInstance::mine();
+    blockchain.mine();
 
     Json(BasicResponse {
         success: true,

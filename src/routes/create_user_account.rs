@@ -6,8 +6,7 @@ use crate::{
         user_name::{UserNameTable, USER_NAME_TABLE_NAME},
     },
     kibi::{
-        encryption::Base64VecU8,
-        instance::BlockchainInstance,
+        blockchain::Blockchain,
         types::{BasicResponse, ContractTransactionData, CreateAccountPayload, TransactionType},
         utils::get_timestamp,
     },
@@ -17,6 +16,9 @@ type Response = BasicResponse<UserAccountTable>;
 
 #[post("/", format = "json", data = "<tx_data>")]
 pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
+    // Blockchain
+    let mut blockchain = Blockchain::new();
+
     // Check fields
     if tx_data.user_name.is_empty()
         || tx_data.password.is_empty()
@@ -40,7 +42,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     ));
 
     // Check if the user_name is available
-    let user_name_record = BlockchainInstance::get_last_transaction_under_contract_full_depth(
+    let user_name_record = blockchain.get_last_transaction_under_contract_full_depth(
         user_name_check_contract_id.clone(),
         &tx_data.0.db_access_key,
     );
@@ -55,11 +57,10 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
 
     // User ID = Contract ID based on user info (for CoreUserAccountTable)
     let contract_id = sha256::digest(format!(
-        "{db_key}{user_name}{user_pass}{core_table_name}",
+        "{db_key}{user_name}{user_pass}",
         db_key = tx_data.0.db_access_key,
         user_name = tx_data.0.user_name,
         user_pass = tx_data.0.password,
-        core_table_name = USER_ACCOUNT_TABLE_NAME,
     ));
 
     let user_account = UserAccountTable {
@@ -69,7 +70,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     };
 
     // New Account Transaction
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::ACCOUNT,
             contract_id: contract_id.clone(),
@@ -85,7 +86,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     };
 
     // Register User Email + Pass Hint, Transaction
-    BlockchainInstance::add_new_transaction(
+    blockchain.add_new_transaction(
         ContractTransactionData {
             tx_type: TransactionType::CONTRACT,
             contract_id: user_name_check_contract_id,
@@ -96,7 +97,7 @@ pub fn post(tx_data: Json<CreateAccountPayload>) -> Json<Response> {
     );
 
     // Mine transactions
-    BlockchainInstance::mine();
+    blockchain.mine();
 
     return Json(Response {
         success: true,

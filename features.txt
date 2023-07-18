@@ -60,14 +60,16 @@ fazer uma comparacao rapida e ver se o user_name já está sendo utilizado. - DO
 9 - Tratar o que puder de unwrap()
 9 - Usar compressao de arquivo? (zip?) - FEITO, MAS NAO COMPENSA. REMOVIDO!
 10 - Mudar os Types de Requisicoes HTTP para o final Payload ao invés de Data - DONE
-11 - Implantar sistema de query?
+11 - Implantar sistema de query? (a query deve ser executada no while onde se carrega
+cada bloco)
 12 - IMPORTANTE: porque estou serializando o data de transacoes com json?
 Eu sei que preciso passar o "data" como string, mas... talvez eu possa simplesmente
 mudar o tipo para ser um Vec<u8>, e decompilar ele quando for requisitado - MELHOR JSON - DONE
 13 - Implementar feature para buscar transacoes by user_id - DONE
 14 - Remover logs do rocket
 15 - Gerar documentação com Postman ou apenas no Readme
-16 - Criar ChainDB-Rust (lib)
+16 - Criar ChainDB-Rust (lib) - DONE
+17 - Fazer checagem pra ver se o ChainDB está sendo executado (usando rota "health_route")
 
 
 // O Bloco continua legível, apenas suas transacoes sao encriptografadas

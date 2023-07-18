@@ -8,5 +8,4 @@ pub mod get_transfer_by_user_id;
 pub mod get_user_account;
 pub mod get_user_account_by_id;
 pub mod health_route;
-pub mod mine_unconfirmed_transactions;
 pub mod transfer_units;

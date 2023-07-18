@@ -1,7 +1,7 @@
 use rocket::{get, serde::json::Json};
 use serde::Serialize;
 
-use crate::kibi::{block::Block, instance::BlockchainInstance, utils::SEARCH_BLOCK_DEPTH};
+use crate::kibi::{block::Block, blockchain::Blockchain, utils::SEARCH_BLOCK_DEPTH};
 
 #[derive(Serialize)]
 pub struct ChainResponse {
@@ -13,7 +13,10 @@ pub struct ChainResponse {
 
 #[get("/")]
 pub fn get() -> Json<ChainResponse> {
-    let chain = BlockchainInstance::chain(SEARCH_BLOCK_DEPTH);
+    // Blockchain
+    let blockchain = Blockchain::new();
+
+    let chain = blockchain.chain(SEARCH_BLOCK_DEPTH);
 
     let response = ChainResponse {
         length: chain.len(),
