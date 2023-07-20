@@ -2,13 +2,33 @@
  * Chain DB
  */
 // Server - API
-extern crate rocket;
-use rocket::{launch, routes, Config};
+use rocket::http::Header;
+use rocket::{Request, Response, Config, launch, routes};
+use rocket::fairing::{Fairing, Info, Kind};
 
-// Blockchain - Kibi (yes this is my blockchain name)
 mod core_tables;
 mod kibi;
 mod routes;
+
+// CORS
+pub struct CORS;
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET, PATCH, OPTIONS"));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
 
 #[launch]
 fn rocket() -> _ {
@@ -16,6 +36,7 @@ fn rocket() -> _ {
     let figment = Config::figment().merge(("port", 2818));
 
     rocket::custom(figment)
+        .attach(CORS)
         .mount("/", routes![routes::health_route::get])
         .mount(
             "/post_contract_transaction",
@@ -32,7 +53,8 @@ fn rocket() -> _ {
             routes![routes::get_contract_transactions::get],
         )
         // FOR DEBUG PURPOSES ONLY
-        .mount("/chain", routes![routes::get_chain::get])
+        // TODO: use env here
+        // .mount("/chain", routes![routes::get_chain::get])
         // Create user account
         .mount(
             "/create_user_account",
