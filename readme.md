@@ -22,6 +22,33 @@ We are just at the beginning of the implementation of this database.
 
 Below are links to libraries (client) to be used with your preferred programming language. You can download the latest version of the database in the release section.
 
+## Temporary Server (test)
+
+Use this server to test ChainDB while testing your application or while creating a new Client.
+
+**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app
+
+E.g. (rust using `chain-db-rs`):
+
+```rs
+#[tokio::main]
+async fn main() {
+  // 1 - DB connection: server | db-name | user | password
+  let db = ChainDB::connect(Some("https://gull-dominant-mistakenly.ngrok-free.app"), "my-db", "root", "1234");
+
+  // 2 - Init a table
+  let mut greeting = db.get_table("greeting", GreetingTable::new).await;
+  println!("Current greeting: {:?}", greeting.table.greeting); // Hi
+
+  // 3 - Mutate the table values and persist on chain
+  greeting.table.set_greeting(String::from("Hello!"));
+  greeting.persist().await; // Persist data on chain
+
+  // 4 - See the most updated values of the table
+  println!("Current greeting: {:?}", greeting.table.greeting); // Hello!
+}
+```
+
 ## Libraries (client)
 
 | Platform | Repository                                          |
