@@ -55,10 +55,10 @@ async fn main() {
 
 Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
 
-| Binary         | Devices                      |
-| -------------- | ---------------------------- |
-| chain-db-osx   | macOS 11+                    |
-| chain-db-arm64 | Raspberry Pi3, Raspberry Pi4 |
+| Binary         | OS        | Devices                              |
+| -------------- | --------- | ------------------------------------ |
+| chain-db-osx   | macOS 11+ | Apple                                |
+| chain-db-arm64 | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
 
 ## Libraries (client)
 
