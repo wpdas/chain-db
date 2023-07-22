@@ -24,6 +24,24 @@ We are just at the beginning of the implementation of this database.
 
 Below are links to libraries (client) to be used with your preferred programming language. You can download the latest version of the database in the release section.
 
+## Download
+
+Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
+
+| Binary         | OS        | Devices                              |
+| -------------- | --------- | ------------------------------------ |
+| chain-db-osx   | macOS 11+ | Apple                                |
+| chain-db-arm64 | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
+
+## Libraries (client)
+
+Although some libraries work on the client side, it is recommended to use it on the server side since it is a database transiting sensitive data.
+
+| Platform               | Repository                                          |
+| ---------------------- | --------------------------------------------------- |
+| Rust                   | [chain-db-rs](https://github.com/wpdas/chain-db-rs) |
+| TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
+
 ## Temporary Server (test)
 
 Use this server to test ChainDB while testing your application or while creating a new Client.
@@ -50,21 +68,3 @@ async fn main() {
   println!("Current greeting: {:?}", greeting.table.greeting); // Hello!
 }
 ```
-
-## Download
-
-Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
-
-| Binary         | OS        | Devices                              |
-| -------------- | --------- | ------------------------------------ |
-| chain-db-osx   | macOS 11+ | Apple                                |
-| chain-db-arm64 | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
-
-## Libraries (client)
-
-Although some libraries work on the client side, it is recommended to use it on the server side since it is a database transiting sensitive data.
-
-| Platform               | Repository                                          |
-| ---------------------- | --------------------------------------------------- |
-| Rust                   | [chain-db-rs](https://github.com/wpdas/chain-db-rs) |
-| TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
