@@ -50,7 +50,7 @@ Although some libraries work on the client side, it is recommended to use it on 
 
 Use this server to test ChainDB while testing your application or while creating a new Client.
 
-**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app
+**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app. This server may not be always available.
 
 **Rust using `chain-db-rs`:**
 
