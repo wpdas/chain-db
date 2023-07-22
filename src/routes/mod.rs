@@ -9,3 +9,4 @@ pub mod get_user_account;
 pub mod get_user_account_by_id;
 pub mod health_route;
 pub mod transfer_units;
+pub mod check_user_name;

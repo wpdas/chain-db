@@ -54,7 +54,7 @@ fn rocket() -> _ {
         )
         // FOR DEBUG PURPOSES ONLY
         // TODO: use env here
-        // .mount("/chain", routes![routes::get_chain::get])
+        .mount("/chain", routes![routes::get_chain::get])
         // Create user account
         .mount(
             "/create_user_account",
@@ -78,5 +78,10 @@ fn rocket() -> _ {
         .mount(
             "/get_all_transfers_by_user_id",
             routes![routes::get_all_transfers_by_user_id::get],
+        )
+        // Check if user_name is already taken
+        .mount(
+            "/check_user_name",
+            routes![routes::check_user_name::get],
         )
 }

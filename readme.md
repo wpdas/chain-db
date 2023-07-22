@@ -10,7 +10,9 @@
     <!-- <a href="https://borsh.io">Website</a> -->
     <a href="https://github.com/wpdas/chain-db">About</a>
     <span> | </span>
-    <a href="https://github.com/wpdas/chain-db#librariesclient">Libraries</a>
+    <a href="https://github.com/wpdas/chain-db#download">Download</a>
+    <span> | </span>
+    <a href="https://github.com/wpdas/chain-db#libraries-client">Libraries</a>
   </h3>
 </div>
 
@@ -49,8 +51,20 @@ async fn main() {
 }
 ```
 
+## Download
+
+Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
+
+| Binary         | Devices                      |
+| -------------- | ---------------------------- |
+| chain-db-osx   | macOS 11+                    |
+| chain-db-arm64 | Raspberry Pi3, Raspberry Pi4 |
+
 ## Libraries (client)
 
-| Platform | Repository                                          |
-| -------- | --------------------------------------------------- |
-| Rust     | [chain-db-rs](https://github.com/wpdas/chain-db-rs) |
+Although some libraries work on the client side, it is recommended to use it on the server side since it is a database transiting sensitive data.
+
+| Platform               | Repository                                          |
+| ---------------------- | --------------------------------------------------- |
+| Rust                   | [chain-db-rs](https://github.com/wpdas/chain-db-rs) |
+| TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
