@@ -24,7 +24,7 @@ This database has some features by default, such as: create user account, get us
 
 The `unit` property present in each user's account can be anything the project wants, it can be a type of currency, item, resource.
 
-We are just at the beginning of the implementation of this database. Let me know if you want to contribute to this project, reach me out here or trhought my email: wendersonpdas@gmail.com.
+We are just at the beginning of the implementation of this database. Let me know if you want to contribute to this project, contact me here or via my email: wendersonpdas@gmail.com.
 
 ## Download
 
