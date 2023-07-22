@@ -65,7 +65,7 @@ async fn main() {
   println!("{:?}", greetingTable.table.greeting); // "Hi"
 
   // 3 - Mutate the table values and persist on chain
-  greetingTable.table.set_greeting(String::from("Hello my dear!"));
+  greetingTable.table.greeting = String::from("Hello my dear!");
   greetingTable.persist().await; // Persist data on chain
 
   // 4 - See the most updated values of the table
@@ -89,7 +89,7 @@ const main async () {
 
   // 3 - Mutate the table values and persist on chain
   greetingTable.table.greeting = "Hello my dear!"
-  greetingTable.persist() // Data is persisted on the blockchain
+  await greetingTable.persist() // Data is persisted on the blockchain
 
   // 4 - See the most updated values of the table
   console.log(greetingTable.table.greeting) // 'Hello my dear!'
