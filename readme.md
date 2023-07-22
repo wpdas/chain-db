@@ -20,9 +20,11 @@ Chain DB is a Story-driven database. This new type of system uses some features 
 
 The way data is read resembles the format of blockchains as well. The generated blocks are immutable. New data or updated data are saved in newer blocks, in this way, it is possible to recover all data from a table throughout its life.
 
-We are just at the beginning of the implementation of this database.
+This database has some features by default, such as: create user account, get user account, transfer units and get transfer records as well as the main feature that is tables.
 
-Below are links to libraries (client) to be used with your preferred programming language. You can download the latest version of the database in the release section.
+The `unit` property present in each user's account can be anything the project wants, it can be a type of currency, item, resource.
+
+We are just at the beginning of the implementation of this database.
 
 ## Download
 
@@ -34,6 +36,8 @@ Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download t
 | [chain-db-arm64](https://github.com/wpdas/chain-db/releases/download/v0.0.2-alpha/chain-db-arm64) | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
 
 ## Libraries (client)
+
+Below are links to libraries (client) to be used with your preferred programming language.
 
 Although some libraries work on the client side, it is recommended to use it on the server side since it is a database transiting sensitive data.
 
