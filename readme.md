@@ -62,13 +62,37 @@ async fn main() {
 
   // 2 - Init a table
   let mut greeting = db.get_table("greeting", GreetingTable::new).await;
-  println!("Current greeting: {:?}", greeting.table.greeting); // Hi
+  println!("Current greeting: {:?}", greeting.table.greeting); // "Hi"
 
   // 3 - Mutate the table values and persist on chain
-  greeting.table.set_greeting(String::from("Hello!"));
+  greeting.table.set_greeting(String::from("Hello my dear!"));
   greeting.persist().await; // Persist data on chain
 
   // 4 - See the most updated values of the table
-  println!("Current greeting: {:?}", greeting.table.greeting); // Hello!
+  println!("Current greeting: {:?}", greeting.table.greeting); // "Hello my dear!"
 }
+```
+
+E.g. (TypeScript / JavaScript using `chain-db-ts`):
+
+```ts
+import { connect } from 'chain-db-ts'
+import { GreetingTable } from './tables'
+
+const main async () {
+  // 1 - DB connection: server | db-name | user | password
+  const db = connect("https://gull-dominant-mistakenly.ngrok-free.app", 'test-db', 'root', '1234')
+
+  // 2 - Init a table
+  const greetingTable = await db.get_table('greeting', new GreetingTable())
+  console.log(greetingTable.table.greeting) // 'Hi'
+
+  // 3 - Mutate the table values and persist on chain
+  greetingTable.table.greeting = "Hello my dear!"
+  greetingTable.persist() // Data is persisted on the blockchain
+
+  // 4 - See the most updated values of the table
+  console.log(greetingTable.table.greeting) // 'Hello my dear!'
+}
+main()
 ```
