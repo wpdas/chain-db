@@ -61,15 +61,15 @@ async fn main() {
   let db = ChainDB::connect(Some("https://gull-dominant-mistakenly.ngrok-free.app"), "test-db", "root", "1234");
 
   // 2 - Init a table
-  let mut greeting = db.get_table("greeting", GreetingTable::new).await;
-  println!("{:?}", greeting.table.greeting); // "Hi"
+  let mut greetingTable = db.get_table("greeting", GreetingTable::new).await;
+  println!("{:?}", greetingTable.table.greeting); // "Hi"
 
   // 3 - Mutate the table values and persist on chain
-  greeting.table.set_greeting(String::from("Hello my dear!"));
-  greeting.persist().await; // Persist data on chain
+  greetingTable.table.set_greeting(String::from("Hello my dear!"));
+  greetingTable.persist().await; // Persist data on chain
 
   // 4 - See the most updated values of the table
-  println!("{:?}", greeting.table.greeting); // "Hello my dear!"
+  println!("{:?}", greetingTable.table.greeting); // "Hello my dear!"
 }
 ```
 
