@@ -58,7 +58,7 @@ Use this server to test ChainDB while testing your application or while creating
 #[tokio::main]
 async fn main() {
   // 1 - DB connection: server | db-name | user | password
-  let db = ChainDB::connect(Some("https://gull-dominant-mistakenly.ngrok-free.app"), "my-db", "root", "1234");
+  let db = ChainDB::connect(Some("https://gull-dominant-mistakenly.ngrok-free.app"), "test-db", "root", "1234");
 
   // 2 - Init a table
   let mut greeting = db.get_table("greeting", GreetingTable::new).await;
