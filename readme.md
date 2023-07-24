@@ -30,10 +30,10 @@ We are just at the beginning of the implementation of this database. Let me know
 
 Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
 
-| Binary                                                                                            | OS        | Devices                              |
-| ------------------------------------------------------------------------------------------------- | --------- | ------------------------------------ |
-| [chain-db-osx](https://github.com/wpdas/chain-db/releases/download/v0.0.3-alpha/chain-db-osx)     | macOS 11+ | Apple                                |
-| [chain-db-arm64](https://github.com/wpdas/chain-db/releases/download/v0.0.3-alpha/chain-db-arm64) | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
+| Binary                                                                                           | OS        | Devices                              |
+| ------------------------------------------------------------------------------------------------ | --------- | ------------------------------------ |
+| [chain-db-osx](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-osx)     | macOS 11+ | Apple                                |
+| [chain-db-arm64](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-arm64) | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
 
 ## Libraries (client)
 
