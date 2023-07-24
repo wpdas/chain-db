@@ -28,7 +28,7 @@ We are just at the beginning of the implementation of this database. Let me know
 
 ## Download
 
-Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired archtecure.
+Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired architecture.
 
 | Binary                                                                                           | OS        | Devices                              |
 | ------------------------------------------------------------------------------------------------ | --------- | ------------------------------------ |
