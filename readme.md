@@ -16,9 +16,9 @@
   </h3>
 </div>
 
-Chain DB is a Story-driven database. This new type of system uses some features used in blockchain technology. Each change generates a transaction that is saved in a block. The network works centrally, so persistent data is not decentralized.
+Chain DB is a Story-driven database. This system uses a chain of blocks with stored data. Each change generates a transaction that is saved in a block. The network works centrally, so persistent data is not decentralized.
 
-The way data is read resembles the format of blockchains as well. The generated blocks are immutable. New data or updated data are saved in newer blocks, in this way, it is possible to recover all data from a table throughout its life.
+The generated blocks are immutable. New data or updated data are saved in newer blocks, in this way, it is possible to recover all data from a table throughout its life.
 
 This database has some features by default, such as: create user account, get user account, transfer units and get transfer records as well as the main feature that is tables.
 
