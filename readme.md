@@ -3,7 +3,7 @@
   <h1><code>Chain DB</code></h1>
 
   <p>
-    <strong>Story-driven Database</strong>
+    <strong>History-driven Database</strong>
   </p>
   
   <h3>
@@ -16,7 +16,7 @@
   </h3>
 </div>
 
-Chain DB is a Story-driven database. This system uses a chain of blocks with stored data. Each change generates a transaction that is saved in a block. The network works centrally, so persistent data is not decentralized.
+Chain DB is a history-driven database. This system uses a chain of blocks with stored data. Each change generates a transaction that is saved in a block. The network works centrally, so persistent data is not decentralized.
 
 The generated blocks are immutable. New data or updated data are saved in newer blocks, in this way, it is possible to recover all data from a table throughout its life.
 
