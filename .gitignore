@@ -1,4 +1,4 @@
 /target
-/data
-/data_
 .DS_Store
+# Generated DB Data Directory
+/.chain_db_data
