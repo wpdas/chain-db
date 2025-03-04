@@ -146,7 +146,7 @@ pub fn find_where(
             match db.create_table::<TableData>(&table_name) {
                 Ok(table) => {
                     let reverse = request.reverse.unwrap_or(true);
-                    match table.findWhere(request.criteria.clone(), request.limit, reverse) {
+                    match table.find_where(request.criteria.clone(), request.limit, reverse) {
                         Ok(records) => {
                             println!("Encontrados {} registros", records.len());
                             let results: Vec<serde_json::Value> =
@@ -207,7 +207,7 @@ pub fn find_where_advanced(
                     println!("Critérios convertidos: {:?}", criteria);
 
                     let reverse = request.reverse.unwrap_or(true);
-                    match table.findWhereAdvanced(criteria, request.limit, reverse) {
+                    match table.find_where_advanced(criteria, request.limit, reverse) {
                         Ok(records) => {
                             println!("Encontrados {} registros", records.len());
                             let results: Vec<serde_json::Value> =

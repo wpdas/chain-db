@@ -415,3 +415,205 @@ Neste exemplo, a busca procurará registros onde:
   ]
 }
 ```
+
+## Sistema de Eventos em Tempo Real
+
+O ChainDB agora inclui um sistema de eventos em tempo real que permite aos clientes se inscreverem para receber notificações quando ocorrerem alterações nas tabelas. Isso é útil para manter interfaces de usuário sincronizadas com o banco de dados sem a necessidade de polling constante.
+
+### Tipos de Eventos
+
+Os seguintes tipos de eventos estão disponíveis:
+
+- `TableUpdate`: Emitido quando um registro é atualizado usando o método `update()`
+- `TablePersist`: Emitido quando um novo registro é persistido usando o método `persist()`
+- `TableQuery`: Emitido quando uma consulta é realizada (ainda não implementado)
+
+### Inscrição para Eventos
+
+Para receber eventos em tempo real, o cliente deve estabelecer uma conexão WebSocket e enviar uma mensagem de inscrição.
+
+#### 1. Estabelecer Conexão WebSocket
+
+```javascript
+// Exemplo em JavaScript
+const token = "Basic dGVzdF9kYjpyb290OjEyMzQ="; // Token de autenticação
+const ws = new WebSocket(`ws://localhost:2818/api/v1/events`);
+
+// Adicionar cabeçalho de autenticação
+ws.onopen = () => {
+  // Enviar cabeçalho de autenticação
+  ws.send(
+    JSON.stringify({
+      type: "auth",
+      token: token,
+    })
+  );
+
+  // Inscrever-se para eventos
+  ws.send(
+    JSON.stringify({
+      event_type: "TableUpdate",
+      table: "minhaTabela", // opcional, se não for especificado, recebe eventos de todas as tabelas
+    })
+  );
+};
+```
+
+#### 2. Receber Eventos
+
+```javascript
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  // Verificar se é uma confirmação de inscrição
+  if (data.subscription_id) {
+    console.log("Inscrito com sucesso:", data.subscription_id);
+    return;
+  }
+
+  // Processar o evento
+  console.log("Evento recebido:", data);
+
+  // Exemplo de processamento com base no tipo de evento
+  switch (data.event_type) {
+    case "TableUpdate":
+      console.log("Tabela atualizada:", data.table);
+      console.log("Novos dados:", data.data);
+      // Atualizar a interface do usuário
+      break;
+    case "TablePersist":
+      console.log("Novo registro persistido:", data.table);
+      console.log("Dados:", data.data);
+      // Adicionar o novo registro à interface do usuário
+      break;
+  }
+};
+```
+
+#### 3. Listar Tipos de Eventos Disponíveis
+
+```bash
+curl -X GET http://localhost:2818/api/v1/events/types \
+  -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
+```
+
+Resposta:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": ["TableUpdate", "TablePersist", "TableQuery"]
+}
+```
+
+### Estrutura dos Eventos
+
+Os eventos têm a seguinte estrutura:
+
+```json
+{
+  "event_type": "TableUpdate",
+  "database": "meu_banco",
+  "table": "minhaTabela",
+  "data": {
+    "campo1": "valor1",
+    "campo2": "valor2"
+  },
+  "timestamp": 1621234567
+}
+```
+
+- `event_type`: Tipo do evento (TableUpdate, TablePersist, TableQuery)
+- `database`: Nome do banco de dados
+- `table`: Nome da tabela
+- `data`: Dados associados ao evento (opcional)
+- `timestamp`: Timestamp do evento (segundos desde o epoch)
+
+### Exemplo de Uso com React
+
+```jsx
+import { useEffect, useState } from "react";
+
+function TableComponent({ tableName, token }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    // Carregar dados iniciais
+    fetch(`http://localhost:2818/api/v1/table/${tableName}`, {
+      headers: {
+        Authorization: token,
+      },
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.success) {
+          setData(response.data);
+        }
+      });
+
+    // Estabelecer conexão WebSocket
+    const ws = new WebSocket(`ws://localhost:2818/api/v1/events`);
+
+    ws.onopen = () => {
+      // Enviar cabeçalho de autenticação
+      ws.send(
+        JSON.stringify({
+          type: "auth",
+          token: token,
+        })
+      );
+
+      // Inscrever-se para eventos
+      ws.send(
+        JSON.stringify({
+          event_type: "TableUpdate",
+          table: tableName,
+        })
+      );
+
+      // Também se inscrever para eventos de persistência
+      ws.send(
+        JSON.stringify({
+          event_type: "TablePersist",
+          table: tableName,
+        })
+      );
+    };
+
+    ws.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+
+      // Ignorar confirmações de inscrição
+      if (eventData.subscription_id) return;
+
+      // Processar o evento
+      if (eventData.table === tableName) {
+        if (eventData.event_type === "TableUpdate") {
+          // Atualizar os dados
+          setData(eventData.data);
+        } else if (eventData.event_type === "TablePersist") {
+          // Adicionar o novo registro
+          setData((prevData) => [...prevData, eventData.data]);
+        }
+      }
+    };
+
+    // Limpar a conexão WebSocket quando o componente for desmontado
+    return () => {
+      ws.close();
+    };
+  }, [tableName, token]);
+
+  return (
+    <div>
+      <h2>Tabela: {tableName}</h2>
+      <ul>
+        {data.map((item, index) => (
+          <li key={index}>{JSON.stringify(item)}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```

@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use crate::encryption::DataEncryption;
 use crate::errors::ChainDBError;
+use crate::events::{emit_table_persist, emit_table_update};
 
 const RECORDS_PER_FILE: usize = 1000;
 pub const METADATA_FILE: &str = "metadata.cdb";
@@ -115,6 +116,33 @@ where
         let metadata_path = self.path.join(METADATA_FILE);
         fs::write(metadata_path, encrypted_metadata)?;
 
+        // Emitir evento de persistência
+        if let Ok(record_value) = serde_json::to_value(record) {
+            // Extrair o nome do banco de dados do caminho
+            let db_name = self
+                .path
+                .parent()
+                .and_then(|p| p.file_name())
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+
+            // Extrair o nome da tabela do caminho
+            let table_name = self
+                .path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+
+            // Extrair apenas os dados internos do campo 'data' se existir
+            let data_to_emit = if let Some(data_obj) = record_value.get("data") {
+                Some(data_obj.clone())
+            } else {
+                Some(record_value)
+            };
+
+            emit_table_persist(db_name, table_name, data_to_emit);
+        }
+
         Ok(())
     }
 
@@ -144,6 +172,33 @@ where
         let mut file = fs::File::create(&file_path)?;
         for line in lines {
             writeln!(file, "{}", line)?;
+        }
+
+        // Emitir evento de atualização
+        if let Ok(record_value) = serde_json::to_value(record) {
+            // Extrair o nome do banco de dados do caminho
+            let db_name = self
+                .path
+                .parent()
+                .and_then(|p| p.file_name())
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+
+            // Extrair o nome da tabela do caminho
+            let table_name = self
+                .path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+
+            // Extrair apenas os dados internos do campo 'data' se existir
+            let data_to_emit = if let Some(data_obj) = record_value.get("data") {
+                Some(data_obj.clone())
+            } else {
+                Some(record_value)
+            };
+
+            emit_table_update(db_name, table_name, data_to_emit);
         }
 
         Ok(())
@@ -337,7 +392,7 @@ where
     /// criteria.insert("idade".to_string(), serde_json::json!(30));
     /// let resultados = tabela.findWhere(criteria, Some(10), true)?;
     /// ```
-    pub fn findWhere(
+    pub fn find_where(
         &self,
         criteria: HashMap<String, serde_json::Value>,
         limit: Option<usize>,
@@ -462,12 +517,12 @@ where
     ///
     /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
     /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
-    pub fn findWhere_default(
+    pub fn find_where_default(
         &self,
         criteria: HashMap<String, serde_json::Value>,
         limit: Option<usize>,
     ) -> Result<Vec<T>, ChainDBError> {
-        self.findWhere(criteria, limit, true)
+        self.find_where(criteria, limit, true)
     }
 
     /// Busca avançada de registros com suporte a diferentes operadores de comparação.
@@ -492,7 +547,7 @@ where
     /// criteria.insert("nome".to_string(), (ComparisonOperator::Contains, serde_json::json!("Silva")));
     /// let resultados = tabela.findWhereAdvanced(criteria, Some(10), true)?;
     /// ```
-    pub fn findWhereAdvanced(
+    pub fn find_where_advanced(
         &self,
         criteria: HashMap<String, (ComparisonOperator, serde_json::Value)>,
         limit: Option<usize>,
@@ -609,12 +664,12 @@ where
     ///
     /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
     /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
-    pub fn findWhereAdvanced_default(
+    pub fn find_where_advanced_default(
         &self,
         criteria: HashMap<String, (ComparisonOperator, serde_json::Value)>,
         limit: Option<usize>,
     ) -> Result<Vec<T>, ChainDBError> {
-        self.findWhereAdvanced(criteria, limit, true)
+        self.find_where_advanced(criteria, limit, true)
     }
 }
 
