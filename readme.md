@@ -273,3 +273,145 @@ your-database/
 ## License / Licença
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Novas Funcionalidades de Busca
+
+### Estrutura dos Dados
+
+É importante entender que os dados na tabela são armazenados com a seguinte estrutura:
+
+```json
+{
+  "data": {
+    "campo1": "valor1",
+    "campo2": "valor2",
+    ...
+  }
+}
+```
+
+Portanto, ao realizar buscas, os critérios devem corresponder aos campos dentro do objeto `data`.
+
+### Busca Simples (findWhere)
+
+A rota `POST /table/<table_name>/find` permite buscar registros com base em critérios de igualdade simples.
+
+**Exemplo de Requisição:**
+
+```json
+{
+  "criteria": {
+    "nome": "João",
+    "idade": 30
+  },
+  "limit": 10,
+  "reverse": true
+}
+```
+
+Neste exemplo, a busca procurará registros onde `data.nome` seja igual a "João" E `data.idade` seja igual a 30.
+
+**Parâmetros:**
+
+- `criteria`: Um objeto contendo os critérios de busca, onde as chaves são os nomes dos campos dentro do objeto `data` e os valores são os valores esperados para esses campos.
+- `limit` (opcional): Número máximo de registros a serem retornados.
+- `reverse` (opcional): Se verdadeiro, busca do registro mais recente para o mais antigo (padrão: true).
+
+**Exemplo de Resposta:**
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "nome": "João",
+      "idade": 30,
+      "cidade": "São Paulo"
+    },
+    {
+      "nome": "João",
+      "idade": 30,
+      "cidade": "Rio de Janeiro"
+    }
+  ]
+}
+```
+
+### Busca Avançada (findWhereAdvanced)
+
+A rota `POST /table/<table_name>/find-advanced` permite buscar registros com base em critérios de comparação mais complexos.
+
+**Exemplo de Requisição:**
+
+```json
+{
+  "criteria": [
+    {
+      "field": "idade",
+      "operator": "Gt",
+      "value": 25
+    },
+    {
+      "field": "nome",
+      "operator": "Contains",
+      "value": "Silva"
+    },
+    {
+      "field": "cidade",
+      "operator": "Eq",
+      "value": "São Paulo"
+    }
+  ],
+  "limit": 20,
+  "reverse": true
+}
+```
+
+Neste exemplo, a busca procurará registros onde:
+
+- `data.idade` seja maior que 25 E
+- `data.nome` contenha "Silva" E
+- `data.cidade` seja igual a "São Paulo"
+
+**Parâmetros:**
+
+- `criteria`: Um array de objetos contendo os critérios de busca, onde cada objeto tem:
+  - `field`: O nome do campo dentro do objeto `data` a ser comparado.
+  - `operator`: O operador de comparação a ser usado.
+  - `value`: O valor a ser comparado.
+- `limit` (opcional): Número máximo de registros a serem retornados.
+- `reverse` (opcional): Se verdadeiro, busca do registro mais recente para o mais antigo (padrão: true).
+
+**Operadores de Comparação Disponíveis:**
+
+- `Eq`: Igual a (==)
+- `Ne`: Diferente de (!=)
+- `Gt`: Maior que (>)
+- `Ge`: Maior ou igual a (>=)
+- `Lt`: Menor que (<)
+- `Le`: Menor ou igual a (<=)
+- `Contains`: Contém (para strings e arrays)
+- `StartsWith`: Começa com (para strings)
+- `EndsWith`: Termina com (para strings)
+
+**Exemplo de Resposta:**
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "nome": "José Silva",
+      "idade": 35,
+      "cidade": "São Paulo"
+    },
+    {
+      "nome": "Maria Silva",
+      "idade": 28,
+      "cidade": "São Paulo"
+    }
+  ]
+}
+```

@@ -1,3 +1,4 @@
+use crate::table::ComparisonOperator;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -74,4 +75,25 @@ impl<T> ApiResponse<T> {
             data: None,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FindWhereRequest {
+    pub criteria: HashMap<String, serde_json::Value>,
+    pub limit: Option<usize>,
+    pub reverse: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FindWhereAdvancedCriteria {
+    pub field: String,
+    pub operator: ComparisonOperator,
+    pub value: serde_json::Value,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FindWhereAdvancedRequest {
+    pub criteria: Vec<FindWhereAdvancedCriteria>,
+    pub limit: Option<usize>,
+    pub reverse: Option<bool>,
 }

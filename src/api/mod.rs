@@ -40,6 +40,8 @@ pub fn routes() -> Vec<rocket::Route> {
         routes::table::get_table_data,
         routes::table::update_table,
         routes::table::persist_table,
-        routes::table::get_history
+        routes::table::get_history,
+        routes::table::find_where,
+        routes::table::find_where_advanced
     ]
 }
