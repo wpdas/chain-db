@@ -10,7 +10,7 @@ use std::collections::HashMap;
 #[get("/table/<table_name>")]
 pub fn get_table_data(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
         Ok(connection) => {
@@ -33,7 +33,7 @@ pub fn get_table_data(
 #[post("/table/<table_name>/update", data = "<request>")]
 pub fn update_table(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<UpdateTableRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -66,7 +66,7 @@ pub fn update_table(
 #[post("/table/<table_name>/persist", data = "<request>")]
 pub fn persist_table(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<UpdateTableRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -101,7 +101,7 @@ pub fn persist_table(
 #[get("/table/<table_name>/history?<limit>")]
 pub fn get_history(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     limit: Option<usize>,
 ) -> Json<ApiResponse<Vec<serde_json::Value>>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -130,7 +130,7 @@ pub fn get_history(
 #[post("/table/<table_name>/find", data = "<request>")]
 pub fn find_where(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<FindWhereRequest>,
 ) -> Json<ApiResponse<Vec<serde_json::Value>>> {
     println!("Recebida requisição findWhere para tabela: {}", table_name);
@@ -178,7 +178,7 @@ pub fn find_where(
 #[post("/table/<table_name>/find-advanced", data = "<request>")]
 pub fn find_where_advanced(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<FindWhereAdvancedRequest>,
 ) -> Json<ApiResponse<Vec<serde_json::Value>>> {
     println!(
