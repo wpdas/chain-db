@@ -22,10 +22,13 @@ ChainDB is a simple database that maintains a history of changes, allowing you t
 
 Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired architecture.
 
-| Binary                                                                                           | OS        | Devices                              |
-| ------------------------------------------------------------------------------------------------ | --------- | ------------------------------------ |
-| [chain-db-osx](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-osx)     | macOS 11+ | Apple                                |
-| [chain-db-arm64](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-arm64) | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
+| Binary                                                                                                              | OS             | Devices                              |
+| ------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------ |
+| [chain-db-linux-amd64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-amd64)             | Linux (x86_64) | Running Ubuntu or similar            |
+| [chain-db-linux-arm64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-arm64)             | Linux (ARM64)  | Raspberry Pi3, Raspberry Pi4, Others |
+| [chain-db-linux-arm64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-armv7)             | Linux (ARMv7)  | Raspberry Pi3, Raspberry Pi4, Others |
+| [chain-db-macos-amd64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-macos-amd64)             | macOS 11+      | Apple                                |
+| [chain-db-windows-amd64.exe](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-windows-amd64.exe) | Windows        | Windows x86_64                       |
 
 ## Client Libraries (backend)
 
