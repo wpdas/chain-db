@@ -42,7 +42,13 @@ Below are links to libraries (for backend) to be used with your preferred progra
 
 Use this server to test ChainDB while testing your application or while creating a new Client Library.
 
-**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app. This server may not be always available.
+**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app.
+
+You can use it instead of `http://localhost:2818`. This server may not be always available.
+
+## Example Apps
+
+[Chat App](https://github.com/wpdas/chat-app-chaindb-nextjs): Real-time Chat App built using ChainDB and ChainDB TS Client.
 
 ## Features
 
