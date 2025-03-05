@@ -3,34 +3,34 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::broadcast;
 
-/// Tipos de eventos que podem ser emitidos pelo sistema
+/// Tipos de events that can be emitted by the system
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum EventType {
-    /// Evento emitido quando um registro é atualizado
+    /// Event emitted when a record is updated
     TableUpdate,
-    /// Evento emitido quando um novo registro é persistido
+    /// Event emitted when a new record is persisted
     TablePersist,
-    /// Evento emitido quando uma consulta é realizada
+    /// Event emitted when a query is performed
     TableQuery,
 }
 
-/// Estrutura que representa um evento no sistema
+/// Structure representing an event in the system
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Event {
-    /// Tipo do evento
+    /// Type of event
     pub event_type: EventType,
-    /// Nome do banco de dados
+    /// Database name
     pub database: String,
-    /// Nome da tabela
+    /// Table name
     pub table: String,
-    /// Dados associados ao evento (opcional)
+    /// Associated data with the event (optional)
     pub data: Option<serde_json::Value>,
-    /// Timestamp do evento
+    /// Event timestamp
     pub timestamp: u64,
 }
 
 impl Event {
-    /// Cria um novo evento
+    /// Creates a new event
     pub fn new(
         event_type: EventType,
         database: &str,
@@ -50,68 +50,90 @@ impl Event {
     }
 }
 
-/// Gerenciador de eventos do sistema
+/// Event manager for the system
 #[derive(Debug, Clone)]
 pub struct EventManager {
-    /// Canais de broadcast para cada tipo de evento
+    /// Broadcast channels for each type of event
     channels: Arc<Mutex<HashMap<EventSubscription, broadcast::Sender<Event>>>>,
 }
 
-/// Chave de inscrição para eventos
+/// Subscription key for events
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EventSubscription {
-    /// Tipo do evento
+    /// Type of event
     pub event_type: EventType,
-    /// Nome do banco de dados (opcional)
+    /// Database name (optional)
     pub database: Option<String>,
-    /// Nome da tabela (opcional)
+    /// Table name (optional)
     pub table: Option<String>,
 }
 
 impl EventManager {
-    /// Cria um novo gerenciador de eventos
+    /// Creates a new event manager
     pub fn new() -> Self {
         Self {
             channels: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
-    /// Emite um evento para todos os inscritos
+    /// Emits an event to all subscribers
     pub fn emit(&self, event: Event) {
         let channels = self.channels.lock().unwrap();
 
-        // Lista de possíveis inscrições que correspondem a este evento
-        let subscriptions = [
-            // Inscrição específica (tipo + banco + tabela)
-            EventSubscription {
-                event_type: event.event_type.clone(),
-                database: Some(event.database.clone()),
-                table: Some(event.table.clone()),
-            },
-            // Inscrição por banco de dados (tipo + banco)
-            EventSubscription {
-                event_type: event.event_type.clone(),
-                database: Some(event.database.clone()),
-                table: None,
-            },
-            // Inscrição global por tipo de evento
-            EventSubscription {
-                event_type: event.event_type.clone(),
-                database: None,
-                table: None,
-            },
-        ];
+        println!(
+            "[DEBUG] Emitting event: {:?} for database: {} table: {}",
+            event.event_type, event.database, event.table
+        );
 
-        // Envia o evento para todos os canais correspondentes
-        for subscription in &subscriptions {
-            if let Some(sender) = channels.get(subscription) {
-                // Ignora erros de envio (ocorrem quando não há receptores)
-                let _ = sender.send(event.clone());
-            }
+        // Check if there is a specific subscription for this event
+        let specific_subscription = EventSubscription {
+            event_type: event.event_type.clone(),
+            database: Some(event.database.clone()),
+            table: Some(event.table.clone()),
+        };
+
+        // Check if there is a database-level subscription
+        let db_subscription = EventSubscription {
+            event_type: event.event_type.clone(),
+            database: Some(event.database.clone()),
+            table: None,
+        };
+
+        // Check if there is a global subscription
+        let global_subscription = EventSubscription {
+            event_type: event.event_type.clone(),
+            database: None,
+            table: None,
+        };
+
+        // Send the event only to existing subscriptions
+        // First check if there is a specific subscription
+        if let Some(sender) = channels.get(&specific_subscription) {
+            println!(
+                "[DEBUG] Sending event to specific subscription: {:?}",
+                specific_subscription
+            );
+            let _ = sender.send(event.clone());
+        }
+        // If there is no specific subscription, check if there is a database-level subscription
+        else if let Some(sender) = channels.get(&db_subscription) {
+            println!(
+                "[DEBUG] Sending event to database subscription: {:?}",
+                db_subscription
+            );
+            let _ = sender.send(event.clone());
+        }
+        // If there is no database-level subscription, check if there is a global subscription
+        else if let Some(sender) = channels.get(&global_subscription) {
+            println!(
+                "[DEBUG] Sending event to global subscription: {:?}",
+                global_subscription
+            );
+            let _ = sender.send(event.clone());
         }
     }
 
-    /// Inscreve-se para receber eventos de um tipo específico
+    /// Subscribes to receive events of a specific type
     pub fn subscribe(&self, subscription: EventSubscription) -> broadcast::Receiver<Event> {
         let mut channels = self.channels.lock().unwrap();
 
@@ -124,39 +146,34 @@ impl EventManager {
         sender.subscribe()
     }
 
-    /// Cancela a inscrição para eventos
+    /// Cancels the subscription for events
     pub fn unsubscribe(&self, subscription: &EventSubscription) {
         let mut channels = self.channels.lock().unwrap();
         channels.remove(subscription);
     }
 }
 
-// Singleton para o gerenciador de eventos
+// Singleton for the event manager
 lazy_static::lazy_static! {
     static ref EVENT_MANAGER: EventManager = EventManager::new();
 }
 
-/// Obtém a instância global do gerenciador de eventos
+/// Gets the global instance of the event manager
 pub fn get_event_manager() -> EventManager {
     EVENT_MANAGER.clone()
 }
 
-/// Emite um evento para todos os inscritos
+/// Emits an event to all subscribers
 pub fn emit_event(event: Event) {
     get_event_manager().emit(event);
 }
 
-/// Emite um evento de atualização de tabela
+/// Emits a table update event
 pub fn emit_table_update(database: &str, table: &str, data: Option<serde_json::Value>) {
     emit_event(Event::new(EventType::TableUpdate, database, table, data));
 }
 
-/// Emite um evento de persistência de tabela
+/// Emits a table persist event
 pub fn emit_table_persist(database: &str, table: &str, data: Option<serde_json::Value>) {
     emit_event(Event::new(EventType::TablePersist, database, table, data));
-}
-
-/// Emite um evento de consulta de tabela
-pub fn emit_table_query(database: &str, table: &str, data: Option<serde_json::Value>) {
-    emit_event(Event::new(EventType::TableQuery, database, table, data));
 }

@@ -384,20 +384,21 @@ where
     /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
     /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
     ///
-    /// # Exemplo
-    ///
-    /// ```
-    /// let mut criteria = HashMap::new();
-    /// criteria.insert("nome".to_string(), serde_json::json!("João"));
-    /// criteria.insert("idade".to_string(), serde_json::json!(30));
-    /// let resultados = tabela.findWhere(criteria, Some(10), true)?;
-    /// ```
     pub fn find_where(
         &self,
         criteria: HashMap<String, serde_json::Value>,
         limit: Option<usize>,
         reverse: bool,
     ) -> Result<Vec<T>, ChainDBError> {
+        // # Exemplo
+        //
+        // ```
+        // let mut criteria = HashMap::new();
+        // criteria.insert("nome".to_string(), serde_json::json!("João"));
+        // criteria.insert("idade".to_string(), serde_json::json!(30));
+        // let resultados = tabela.findWhere(criteria, Some(10), true)?;
+        // ```
+
         if self.metadata.total_records == 0 {
             return Ok(Vec::new());
         }
@@ -504,27 +505,6 @@ where
         Ok(matching_records)
     }
 
-    /// Versão simplificada da função findWhere que usa valores padrão.
-    ///
-    /// Esta função é uma conveniência que chama findWhere com reverse=true.
-    ///
-    /// # Argumentos
-    ///
-    /// * `criteria` - Um HashMap contendo os critérios de busca
-    /// * `limit` - Número máximo de registros a serem retornados (opcional)
-    ///
-    /// # Retornos
-    ///
-    /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
-    /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
-    pub fn find_where_default(
-        &self,
-        criteria: HashMap<String, serde_json::Value>,
-        limit: Option<usize>,
-    ) -> Result<Vec<T>, ChainDBError> {
-        self.find_where(criteria, limit, true)
-    }
-
     /// Busca avançada de registros com suporte a diferentes operadores de comparação.
     ///
     /// # Argumentos
@@ -539,20 +519,21 @@ where
     /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
     /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
     ///
-    /// # Exemplo
-    ///
-    /// ```
-    /// let mut criteria = HashMap::new();
-    /// criteria.insert("idade".to_string(), (ComparisonOperator::Gt, serde_json::json!(30)));
-    /// criteria.insert("nome".to_string(), (ComparisonOperator::Contains, serde_json::json!("Silva")));
-    /// let resultados = tabela.findWhereAdvanced(criteria, Some(10), true)?;
-    /// ```
     pub fn find_where_advanced(
         &self,
         criteria: HashMap<String, (ComparisonOperator, serde_json::Value)>,
         limit: Option<usize>,
         reverse: bool,
     ) -> Result<Vec<T>, ChainDBError> {
+        // # Exemplo
+        //
+        // ```
+        // let mut criteria = HashMap::new();
+        // criteria.insert("idade".to_string(), (ComparisonOperator::Gt, serde_json::json!(30)));
+        // criteria.insert("nome".to_string(), (ComparisonOperator::Contains, serde_json::json!("Silva")));
+        // let resultados = tabela.findWhereAdvanced(criteria, Some(10), true)?;
+        // ```
+
         if self.metadata.total_records == 0 {
             return Ok(Vec::new());
         }
@@ -649,27 +630,6 @@ where
         }
 
         Ok(matching_records)
-    }
-
-    /// Versão simplificada da função findWhereAdvanced que usa valores padrão.
-    ///
-    /// Esta função é uma conveniência que chama findWhereAdvanced com reverse=true.
-    ///
-    /// # Argumentos
-    ///
-    /// * `criteria` - Um HashMap contendo os critérios de busca avançados
-    /// * `limit` - Número máximo de registros a serem retornados (opcional)
-    ///
-    /// # Retornos
-    ///
-    /// * `Ok(Vec<T>)` - Um vetor contendo os registros que correspondem aos critérios
-    /// * `Err(ChainDBError)` - Se ocorrer um erro durante a busca
-    pub fn find_where_advanced_default(
-        &self,
-        criteria: HashMap<String, (ComparisonOperator, serde_json::Value)>,
-        limit: Option<usize>,
-    ) -> Result<Vec<T>, ChainDBError> {
-        self.find_where_advanced(criteria, limit, true)
     }
 }
 
