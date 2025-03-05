@@ -93,7 +93,7 @@ Add ChainDB to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-chain-db-v2 = "0.1.0"
+chain-db = "1.0.0"
 ```
 
 ## Quick Start

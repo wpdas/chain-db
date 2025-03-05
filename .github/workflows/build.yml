@@ -27,24 +27,24 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: chain-db-v2
-            asset_name: chain-db-v2-linux-amd64
+            artifact_name: chain-db
+            asset_name: chain-db-linux-amd64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            artifact_name: chain-db-v2
-            asset_name: chain-db-v2-linux-arm64
+            artifact_name: chain-db
+            asset_name: chain-db-linux-arm64
           - os: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
-            artifact_name: chain-db-v2
-            asset_name: chain-db-v2-linux-armv7
+            artifact_name: chain-db
+            asset_name: chain-db-linux-armv7
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: chain-db-v2.exe
-            asset_name: chain-db-v2-windows-amd64.exe
+            artifact_name: chain-db.exe
+            asset_name: chain-db-windows-amd64.exe
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: chain-db-v2
-            asset_name: chain-db-v2-macos-amd64
+            artifact_name: chain-db
+            asset_name: chain-db-macos-amd64
 
     steps:
       - uses: actions/checkout@v3

@@ -125,12 +125,12 @@ build_for_target() {
     mkdir -p $BUILD_DIR
     
     # Copy binary to releases directory
-    local binary_name="chain-db-v2"
+    local binary_name="chain-db"
     if [[ $target == *"windows"* ]]; then
-        binary_name="chain-db-v2.exe"
+        binary_name="chain-db.exe"
     fi
     
-    cp "target/$target/release/$binary_name" "$BUILD_DIR/chain-db-v2-$name"
+    cp "target/$target/release/$binary_name" "$BUILD_DIR/chain-db-$name"
     echo -e "${GREEN}✓ Build completed for $name${NC}"
 }
 
