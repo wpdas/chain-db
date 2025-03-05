@@ -5,6 +5,7 @@ mod chaindb;
 mod config;
 mod encryption;
 mod errors;
+mod events;
 mod table;
 
 #[cfg(test)]

@@ -1,10 +1,45 @@
-# ChainDB
+<div align="center">
 
-[English](#english) | [Português](README.pt-BR.md)
+  <h1><code>Chain DB</code></h1>
 
-# English
+  <p>
+    <strong>History-driven Database</strong>
+  </p>
+  
+  <h3>
+    <!-- <a href="https://borsh.io">Website</a> -->
+    <a href="https://github.com/wpdas/chain-db">About</a>
+    <span> | </span>
+    <a href="https://github.com/wpdas/chain-db#download">Download</a>
+    <span> | </span>
+    <a href="https://github.com/wpdas/chain-db#libraries-client">Libraries</a>
+  </h3>
+</div>
 
 ChainDB is a simple database that maintains a history of changes, allowing you to track how your data evolves over time.
+
+## Download
+
+Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download the binary according to the desired architecture.
+
+| Binary                                                                                           | OS        | Devices                              |
+| ------------------------------------------------------------------------------------------------ | --------- | ------------------------------------ |
+| [chain-db-osx](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-osx)     | macOS 11+ | Apple                                |
+| [chain-db-arm64](https://github.com/wpdas/chain-db/releases/download/0.0.3-alpha/chain-db-arm64) | Linux     | Raspberry Pi3, Raspberry Pi4, Others |
+
+## Client Libraries (backend)
+
+Below are links to libraries (for backend) to be used with your preferred programming language.
+
+| Platform               | Repository                                          |
+| ---------------------- | --------------------------------------------------- |
+| TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
+
+## Temporary Server (test)
+
+Use this server to test ChainDB while testing your application or while creating a new Client Library.
+
+**Chain DB Test Server:** https://gull-dominant-mistakenly.ngrok-free.app. This server may not be always available.
 
 ## Features
 
@@ -52,7 +87,7 @@ ChainDB uses a robust encryption system to protect your data:
      2. Data is decrypted using the derived key
      3. JSON is parsed back into the data structure
 
-## Installation
+<!-- ## Installation
 
 Add ChainDB to your `Cargo.toml`:
 
@@ -109,9 +144,9 @@ async fn main() {
     let history = greeting_table.get_data_history(50).await;
     println!("{:?}", history);
 }
-```
+``` -->
 
-## Testing the API
+## Testing the API (for this program development process)
 
 1. Start the server:
 
@@ -270,6 +305,324 @@ your-database/
     └── ...
 ```
 
-## License / Licença
+## New Search Features
+
+### Data Structure
+
+It's important to understand that the data in the table is stored with the following structure:
+
+```json
+{
+  "data": {
+    "field1": "value1",
+    "field2": "value2",
+    ...
+  }
+}
+```
+
+Therefore, when performing searches, the criteria must match the fields within the `data` object.
+
+### Simple Search (findWhere)
+
+The `POST /table/<table_name>/find` route allows you to search for records based on simple equality criteria.
+
+**Request Example:**
+
+```json
+{
+  "criteria": {
+    "name": "John",
+    "age": 30
+  },
+  "limit": 10,
+  "reverse": true
+}
+```
+
+In this example, the search will look for records where `data.name` equals "John" AND `data.age` equals 30.
+
+**Parameters:**
+
+- `criteria`: An object containing the search criteria, where the keys are the field names within the `data` object and the values are the expected values for those fields.
+- `limit` (optional): Maximum number of records to be returned.
+- `reverse` (optional): If true, search from the most recent record to the oldest (default: true).
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "name": "John",
+      "age": 30,
+      "city": "New York"
+    },
+    {
+      "name": "John",
+      "age": 30,
+      "city": "Los Angeles"
+    }
+  ]
+}
+```
+
+### Advanced Search (findWhereAdvanced)
+
+The `POST /table/<table_name>/find-advanced` route allows you to search for records based on more complex comparison criteria.
+
+**Request Example:**
+
+```json
+{
+  "criteria": [
+    {
+      "field": "age",
+      "operator": "Gt",
+      "value": 25
+    },
+    {
+      "field": "name",
+      "operator": "Contains",
+      "value": "Smith"
+    },
+    {
+      "field": "city",
+      "operator": "Eq",
+      "value": "New York"
+    }
+  ],
+  "limit": 20,
+  "reverse": true
+}
+```
+
+In this example, the search will look for records where:
+
+- `data.age` is greater than 25 AND
+- `data.name` contains "Smith" AND
+- `data.city` equals "New York"
+
+**Parameters:**
+
+- `criteria`: An array of objects containing the search criteria, where each object has:
+  - `field`: The name of the field within the `data` object to be compared.
+  - `operator`: The comparison operator to be used.
+  - `value`: The value to be compared.
+- `limit` (optional): Maximum number of records to be returned.
+- `reverse` (optional): If true, search from the most recent record to the oldest (default: true).
+
+**Available Comparison Operators:**
+
+- `Eq`: Equal to (==)
+- `Ne`: Not equal to (!=)
+- `Gt`: Greater than (>)
+- `Ge`: Greater than or equal to (>=)
+- `Lt`: Less than (<)
+- `Le`: Less than or equal to (<=)
+- `Contains`: Contains (for strings and arrays)
+- `StartsWith`: Starts with (for strings)
+- `EndsWith`: Ends with (for strings)
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": [
+    {
+      "name": "Joseph Smith",
+      "age": 35,
+      "city": "New York"
+    },
+    {
+      "name": "Mary Smith",
+      "age": 28,
+      "city": "New York"
+    }
+  ]
+}
+```
+
+## Real-Time Event System
+
+ChainDB now includes a real-time event system that allows clients to receive automatic notifications when changes occur in tables. This is useful for keeping user interfaces synchronized with the database without the need for constant polling.
+
+### Event Types
+
+The following event types are available:
+
+- `TableUpdate`: Emitted when a record is updated using the `update()` method
+- `TablePersist`: Emitted when a new record is persisted using the `persist()` method
+
+### Receiving Real-Time Events
+
+To receive real-time events, the client only needs to establish a WebSocket connection with the authentication token. There is no need to send an explicit subscription message.
+
+#### 1. Establishing WebSocket Connection
+
+```javascript
+// JavaScript example
+const token = "Basic dGVzdF9kYjpyb290OjEyMzQ="; // Authentication token
+const ws = new WebSocket(`ws://localhost:2818/api/v1/events`, {
+  headers: {
+    Authorization: token,
+  },
+});
+
+// On connect
+ws.onopen = () => {
+  console.log("WebSocket connection established");
+};
+```
+
+#### 2. Receiving Events
+
+```javascript
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  // Check if it's a connection confirmation
+  if (data.status === "connected") {
+    console.log("Successfully connected to database:", data.database);
+    if (data.table) {
+      console.log("Table:", data.table);
+    }
+    return;
+  }
+
+  // Process the event
+  console.log("Event received:", data);
+
+  // Example of processing based on event type
+  switch (data.event_type) {
+    case "TableUpdate":
+      console.log("Table updated:", data.table);
+      console.log("New data:", data.data);
+      // Update the user interface
+      break;
+    case "TablePersist":
+      console.log("New record persisted:", data.table);
+      console.log("Data:", data.data);
+      // Add the new record to the user interface
+      break;
+  }
+};
+```
+
+#### 3. Listing Available Event Types
+
+```bash
+curl -X GET http://localhost:2818/api/v1/events/types \
+  -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": ["TableUpdate", "TablePersist"]
+}
+```
+
+### Event Structure
+
+Events have the following structure:
+
+```json
+{
+  "event_type": "TableUpdate",
+  "database": "my_database",
+  "table": "myTable",
+  "data": {
+    "field1": "value1",
+    "field2": "value2"
+  },
+  "timestamp": 1621234567
+}
+```
+
+- `event_type`: Type of event (TableUpdate, TablePersist)
+- `database`: Database name
+- `table`: Table name
+- `data`: Data associated with the event (the internal data of the record)
+- `timestamp`: Event timestamp (seconds since epoch)
+
+### Example Usage with React
+
+```jsx
+import { useEffect, useState } from "react";
+
+function TableComponent({ tableName, token, databaseAuth }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    // Load initial data
+    fetch(`http://localhost:2818/api/v1/table/${tableName}`, {
+      headers: {
+        Authorization: token,
+      },
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.success) {
+          setData(response.data);
+        }
+      });
+
+    // Establish WebSocket connection
+    const ws = new WebSocket(`ws://localhost:2818/api/v1/events`, {
+      headers: {
+        Authorization: `Basic ${databaseAuth}`, // Use /api/v1/database/connect to get the "auth_token"
+      },
+    });
+
+    ws.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    ws.onmessage = (event) => {
+      const eventData = JSON.parse(event.data);
+
+      // Ignore connection confirmations
+      if (eventData.status === "connected") return;
+
+      // Process the event
+      if (eventData.table === tableName) {
+        if (eventData.event_type === "TableUpdate") {
+          // Update the data
+          setData(eventData.data);
+        } else if (eventData.event_type === "TablePersist") {
+          // Add the new record
+          setData((prevData) => [...prevData, eventData.data]);
+        }
+      }
+    };
+
+    // Clean up the WebSocket connection when the component is unmounted
+    return () => {
+      ws.close();
+    };
+  }, [tableName, token]);
+
+  return (
+    <div>
+      <h2>Table: {tableName}</h2>
+      <ul>
+        {data.map((item, index) => (
+          <li key={index}>{JSON.stringify(item)}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

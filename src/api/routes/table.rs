@@ -1,13 +1,16 @@
 use crate::api::auth::DatabaseAuth;
-use crate::api::models::{ApiResponse, TableData, UpdateTableRequest};
+use crate::api::models::{
+    ApiResponse, FindWhereAdvancedRequest, FindWhereRequest, TableData, UpdateTableRequest,
+};
 use crate::chaindb::ChainDB;
 use rocket::serde::json::Json;
 use rocket::{get, post};
+use std::collections::HashMap;
 
 #[get("/table/<table_name>")]
 pub fn get_table_data(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
         Ok(connection) => {
@@ -30,7 +33,7 @@ pub fn get_table_data(
 #[post("/table/<table_name>/update", data = "<request>")]
 pub fn update_table(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<UpdateTableRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -63,7 +66,7 @@ pub fn update_table(
 #[post("/table/<table_name>/persist", data = "<request>")]
 pub fn persist_table(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     request: Json<UpdateTableRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -98,7 +101,7 @@ pub fn persist_table(
 #[get("/table/<table_name>/history?<limit>")]
 pub fn get_history(
     auth: DatabaseAuth,
-    table_name: String,
+    table_name: &str,
     limit: Option<usize>,
 ) -> Json<ApiResponse<Vec<serde_json::Value>>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
@@ -121,5 +124,114 @@ pub fn get_history(
             "Failed to connect to database: {}",
             "Table not found or wrong Authorization token" // e
         ))),
+    }
+}
+
+#[post("/table/<table_name>/find", data = "<request>")]
+pub fn find_where(
+    auth: DatabaseAuth,
+    table_name: &str,
+    request: Json<FindWhereRequest>,
+) -> Json<ApiResponse<Vec<serde_json::Value>>> {
+    println!("Recebida requisição findWhere para tabela: {}", table_name);
+    println!("Critérios: {:?}", request.criteria);
+    println!(
+        "Limite: {:?}, Reverso: {:?}",
+        request.limit, request.reverse
+    );
+
+    match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
+        Ok(connection) => {
+            let db = connection.db;
+            match db.create_table::<TableData>(&table_name) {
+                Ok(table) => {
+                    let reverse = request.reverse.unwrap_or(true);
+                    match table.find_where(request.criteria.clone(), request.limit, reverse) {
+                        Ok(records) => {
+                            println!("Encontrados {} registros", records.len());
+                            let results: Vec<serde_json::Value> =
+                                records.into_iter().map(|record| record.to_json()).collect();
+                            Json(ApiResponse::success(results))
+                        }
+                        Err(e) => {
+                            println!("Erro ao buscar registros: {}", e);
+                            Json(ApiResponse::error(format!("Failed to find records: {}", e)))
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("Erro ao criar tabela: {}", e);
+                    Json(ApiResponse::error(format!("Failed to create table: {}", e)))
+                }
+            }
+        }
+        Err(e) => {
+            println!("Erro ao conectar ao banco de dados: {}", e);
+            Json(ApiResponse::error(format!(
+                "Failed to connect to database: {}",
+                e
+            )))
+        }
+    }
+}
+
+#[post("/table/<table_name>/find-advanced", data = "<request>")]
+pub fn find_where_advanced(
+    auth: DatabaseAuth,
+    table_name: &str,
+    request: Json<FindWhereAdvancedRequest>,
+) -> Json<ApiResponse<Vec<serde_json::Value>>> {
+    println!(
+        "Recebida requisição findWhereAdvanced para tabela: {}",
+        table_name
+    );
+    println!("Critérios: {:?}", request.criteria);
+    println!(
+        "Limite: {:?}, Reverso: {:?}",
+        request.limit, request.reverse
+    );
+
+    match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
+        Ok(connection) => {
+            let db = connection.db;
+            match db.create_table::<TableData>(&table_name) {
+                Ok(table) => {
+                    // Converter o formato da requisição para o formato esperado pela função findWhereAdvanced
+                    let mut criteria = HashMap::new();
+                    for criterion in &request.criteria {
+                        criteria.insert(
+                            criterion.field.clone(),
+                            (criterion.operator.clone(), criterion.value.clone()),
+                        );
+                    }
+                    println!("Critérios convertidos: {:?}", criteria);
+
+                    let reverse = request.reverse.unwrap_or(true);
+                    match table.find_where_advanced(criteria, request.limit, reverse) {
+                        Ok(records) => {
+                            println!("Encontrados {} registros", records.len());
+                            let results: Vec<serde_json::Value> =
+                                records.into_iter().map(|record| record.to_json()).collect();
+                            Json(ApiResponse::success(results))
+                        }
+                        Err(e) => {
+                            println!("Erro ao buscar registros: {}", e);
+                            Json(ApiResponse::error(format!("Failed to find records: {}", e)))
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("Erro ao criar tabela: {}", e);
+                    Json(ApiResponse::error(format!("Failed to create table: {}", e)))
+                }
+            }
+        }
+        Err(e) => {
+            println!("Erro ao conectar ao banco de dados: {}", e);
+            Json(ApiResponse::error(format!(
+                "Failed to connect to database: {}",
+                e
+            )))
+        }
     }
 }

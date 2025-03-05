@@ -1,13 +1,13 @@
 # Changelog
 
-[English](#changelog) | [Português](CHANGELOG.pt-BR.md)
-
-## 1.0.0 (2023-11-15)
+## 1.0.0 (2025-03-04)
 
 ### Main Changes Compared to the v0.0.3
 
 - **Enhanced Security**: Implementation of AES-256-GCM encryption for all stored data, replacing the previous model without encryption
 - **Password Management**: Password-based key derivation system using SHA-256, offering greater security for data access
+- **Advanced Search Capabilities**: Implementation of powerful search functionality with multiple comparison operators (equals, greater than, contains, starts with, etc.)
+- **Real-Time Event System**: Addition of WebSocket-based event system for real-time notifications when data changes
 - **Automatic Backup**: Addition of automatic backup system during critical operations such as password changes
 - **Disk Space Verification**: Implementation of system resource checks before operations that require additional space
 - **Operation Atomicity**: Guarantee that critical operations are atomic (all or nothing) with rollback mechanism in case of failure
@@ -29,3 +29,5 @@
 - Complete rewrite of the codebase for greater efficiency and maintainability
 - Better error handling and failure recovery
 - More comprehensive documentation and usage examples
+- WebSocket API for real-time data synchronization
+- Flexible query system with support for complex search criteria
