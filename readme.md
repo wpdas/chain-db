@@ -26,7 +26,7 @@ Go to [Releases](https://github.com/wpdas/chain-db/releases) page and download t
 | ------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------ |
 | [chain-db-linux-amd64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-amd64)             | Linux (x86_64) | Running Ubuntu or similar            |
 | [chain-db-linux-arm64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-arm64)             | Linux (ARM64)  | Raspberry Pi3, Raspberry Pi4, Others |
-| [chain-db-linux-armv7](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-armv7)             | Linux (ARMv7)  | Raspberry Pi3, Raspberry Pi4, Others |
+| [chain-db-linux-armv7](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-linux-armv7)             | Linux (ARMv7)  | Raspberry Pi2, Raspberry Pi3, Others |
 | [chain-db-macos-amd64](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-macos-amd64)             | macOS 11+      | Apple                                |
 | [chain-db-windows-amd64.exe](https://github.com/wpdas/chain-db/releases/download/v1.0.0/chain-db-windows-amd64.exe) | Windows        | Windows x86_64                       |
 
