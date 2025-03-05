@@ -60,6 +60,11 @@ You can use it instead of `http://localhost:2818`. This server may not be always
 - 📁 Organized file structure with efficient data segmentation
 - ⚡ Fast read and write operations
 - 🔄 Automatic version control and data tracking
+- 🔍 Advanced search capabilities with multiple comparison operators (Eq, Ne, Gt, Ge, Lt, Le, Contains, StartsWith, EndsWith)
+- 🔎 Simple and complex query support for efficient data retrieval
+- 📡 Real-time event system via WebSockets for instant data synchronization
+- 🔔 Event notifications for table updates and new record persistence
+- 🔌 Automatic WebSocket subscriptions for seamless client integration
 
 ## Security and Encryption
 
@@ -152,8 +157,7 @@ async fn main() {
     // 6. Get history (last 50 records)
     let history = greeting_table.get_data_history(50).await;
     println!("{:?}", history);
-}
-``` -->
+} -->
 
 ## Testing the API (for this program development process)
 
