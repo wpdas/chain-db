@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 (2025-03-06)
+
+- **List All Tables Feature**: Now it's possible to list all tables present for a specific Database.
+
 ## 1.0.0 (2025-03-04)
 
 ### Main Changes Compared to the v0.0.3
