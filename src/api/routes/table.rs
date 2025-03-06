@@ -235,3 +235,21 @@ pub fn find_where_advanced(
         }
     }
 }
+
+/// Lists all tables in the connected database
+#[get("/tables")]
+pub fn list_tables(auth: DatabaseAuth) -> Json<ApiResponse<Vec<String>>> {
+    match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
+        Ok(connection) => {
+            let db = connection.db;
+            match db.list_tables() {
+                Ok(tables) => Json(ApiResponse::success(tables)),
+                Err(e) => Json(ApiResponse::error(format!("Failed to list tables: {}", e))),
+            }
+        }
+        Err(e) => Json(ApiResponse::error(format!(
+            "Failed to connect to database: {}",
+            "Table not found or wrong Authorization token" // e
+        ))),
+    }
+}

@@ -331,6 +331,39 @@ impl ChainDB {
         fs::create_dir_all(&table_path)?;
         Table::new(table_path, self.encryption.clone())
     }
+
+    /// Lists all tables in the database
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<String>)` - A vector containing the names of all tables in the database
+    /// * `Err(ChainDBError)` - If an error occurs while reading the database directory
+    pub fn list_tables(&self) -> Result<Vec<String>, ChainDBError> {
+        let mut tables = Vec::new();
+
+        // Read the database directory
+        for entry in fs::read_dir(&self.base_path)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            // Skip non-directory entries and special files
+            if !path.is_dir() || entry.file_name() == "config.cdb" {
+                continue;
+            }
+
+            // Check if this is a valid table directory (contains metadata.cdb)
+            let metadata_path = path.join(METADATA_FILE);
+            if metadata_path.exists() {
+                if let Some(table_name) = path.file_name() {
+                    if let Some(name) = table_name.to_str() {
+                        tables.push(name.to_string());
+                    }
+                }
+            }
+        }
+
+        Ok(tables)
+    }
 }
 
 // Função auxiliar para copiar diretórios recursivamente

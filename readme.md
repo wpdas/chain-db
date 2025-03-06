@@ -13,6 +13,8 @@
     <a href="https://github.com/wpdas/chain-db#download">Download</a>
     <span> | </span>
     <a href="https://github.com/wpdas/chain-db#libraries-client">Libraries</a>
+    <span> | </span>
+    <a href="https://github.com/wpdas/chain-db-cli">CLI</a>
   </h3>
 </div>
 
@@ -37,6 +39,19 @@ Below are links to libraries (for backend) to be used with your preferred progra
 | Platform               | Repository                                          |
 | ---------------------- | --------------------------------------------------- |
 | TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
+
+## Command-Line Interface (CLI)
+
+ChainDB comes with a powerful command-line interface that allows you to interact with your databases directly from the terminal. You can create and manage databases, manipulate tables, and perform advanced queries without writing any code.
+
+Install it globally via npm:
+
+```bash
+# Min Node version: 20.18.3
+npm install -g chain-db-cli
+```
+
+Learn more at [chain-db-cli](https://github.com/wpdas/chain-db-cli).
 
 ## Temporary Server (test)
 
@@ -65,6 +80,7 @@ You can use it instead of `http://localhost:2818`. This server may not be always
 - 📡 Real-time event system via WebSockets for instant data synchronization
 - 🔔 Event notifications for table updates and new record persistence
 - 🔌 Automatic WebSocket subscriptions for seamless client integration
+- 🖥️ Command-line interface (CLI) for easy database management and operations via terminal - [chain-db-cli](https://github.com/wpdas/chain-db-cli)
 
 ## Security and Encryption
 
@@ -223,7 +239,24 @@ Use this token in the Authorization header for all subsequent requests:
 Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ=
 ```
 
-3. Change password:
+3. List all tables in the database:
+
+```bash
+curl -X GET http://localhost:2818/api/v1/tables \
+  -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
+```
+
+Response example:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": ["users", "products", "orders"]
+}
+```
+
+4. Change password:
 
 ```bash
 curl -X POST http://localhost:2818/api/v1/database/change-password \
@@ -246,7 +279,7 @@ curl -X POST http://localhost:2818/api/v1/database/change-password \
 - Verifies available disk space before starting (requires at least 2x the current database size)
 - Rolls back to the original state if any error occurs during the process
 
-4. Update table data:
+5. Update table data:
 
 ```bash
 curl -X POST http://localhost:2818/api/v1/table/greetings/update \
@@ -255,14 +288,14 @@ curl -X POST http://localhost:2818/api/v1/table/greetings/update \
   -d '{"data": {"greeting": "Hello, World!"}}'
 ```
 
-5. Get current table data:
+6. Get current table data:
 
 ```bash
 curl -X GET http://localhost:2818/api/v1/table/greetings \
   -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
 ```
 
-6. Persist new record:
+7. Persist new record:
 
 ```bash
 curl -X POST http://localhost:2818/api/v1/table/greetings/persist \
@@ -271,7 +304,7 @@ curl -X POST http://localhost:2818/api/v1/table/greetings/persist \
   -d '{"data": {"greeting": "New Record!"}}'
 ```
 
-7. Get history:
+8. Get history:
 
 ```bash
 curl -X GET http://localhost:2818/api/v1/table/greetings/history?limit=10 \
