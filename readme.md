@@ -12,13 +12,13 @@
     <span> | </span>
     <a href="https://github.com/wpdas/chain-db#download">Download</a>
     <span> | </span>
-    <a href="https://github.com/wpdas/chain-db#libraries-client">Libraries</a>
+    <a href="https://github.com/wpdas/chain-db#client-libraries-backend">Client Libraries</a>
     <span> | </span>
-    <a href="https://github.com/wpdas/chain-db-cli">CLI</a>
+    <a href="https://github.com/wpdas/chain-db-cli#command-line-interface-cli">CLI</a>
   </h3>
 </div>
 
-ChainDB is a simple database that maintains a history of changes, allowing you to track how your data evolves over time.
+ChainDB is a secure database system with built-in history tracking, offering AES-256-GCM encryption, atomic operations with rollback capability, and automatic backups.
 
 ## Download
 
@@ -39,6 +39,7 @@ Below are links to libraries (for backend) to be used with your preferred progra
 | Platform               | Repository                                          |
 | ---------------------- | --------------------------------------------------- |
 | TypeScript, JavaScript | [chain-db-ts](https://github.com/wpdas/chain-db-ts) |
+| Python                 | [chain-db-py](https://github.com/wpdas/chain-db-py) |
 
 ## Command-Line Interface (CLI)
 
