@@ -50,11 +50,14 @@ mod tests {
         assert_eq!(result.data.get("test_key").unwrap(), "test_value_2");
 
         // Testa update
+        // Primeiro obtém o doc_id do registro que queremos atualizar
+        let doc_id = table.get_table().unwrap().doc_id.unwrap();
+
         let mut new_data = TableData::new();
         new_data
             .data
             .insert("test_key".to_string(), serde_json::json!("updated_value"));
-        assert!(table.update(&new_data).is_ok());
+        assert!(table.update(&new_data, &doc_id).is_ok());
 
         // Testa get_history
         let history = table.get_history(50).unwrap();

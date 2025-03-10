@@ -5,26 +5,46 @@ use std::collections::HashMap;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TableData {
     pub data: HashMap<String, serde_json::Value>,
+    pub doc_id: Option<String>,
 }
 
 impl TableData {
     pub fn new() -> Self {
         Self {
             data: HashMap::new(),
+            doc_id: None,
         }
     }
 
     pub fn from_json(value: serde_json::Value) -> Self {
         match value {
-            serde_json::Value::Object(map) => Self {
-                data: map.into_iter().collect(),
-            },
+            serde_json::Value::Object(map) => {
+                // Extrair doc_id se existir
+                let doc_id = map.get("doc_id").and_then(|v| v.as_str()).map(String::from);
+
+                // Extrair os dados, excluindo o doc_id
+                let data: HashMap<String, serde_json::Value> =
+                    map.into_iter().filter(|(k, _)| k != "doc_id").collect();
+
+                Self { data, doc_id }
+            }
             _ => Self::new(),
         }
     }
 
     pub fn to_json(&self) -> serde_json::Value {
-        serde_json::Value::Object(self.data.clone().into_iter().collect())
+        let mut map: serde_json::Map<String, serde_json::Value> =
+            self.data.clone().into_iter().collect();
+
+        // Adicionar doc_id se existir
+        if let Some(doc_id) = &self.doc_id {
+            map.insert(
+                "doc_id".to_string(),
+                serde_json::Value::String(doc_id.clone()),
+            );
+        }
+
+        serde_json::Value::Object(map)
     }
 }
 
@@ -44,6 +64,12 @@ pub struct ConnectDatabaseRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateTableRequest {
+    pub data: serde_json::Value,
+    pub doc_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PersistTableRequest {
     pub data: serde_json::Value,
 }
 

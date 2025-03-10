@@ -1,6 +1,7 @@
 use crate::api::auth::DatabaseAuth;
 use crate::api::models::{
-    ApiResponse, FindWhereAdvancedRequest, FindWhereRequest, TableData, UpdateTableRequest,
+    ApiResponse, FindWhereAdvancedRequest, FindWhereRequest, PersistTableRequest, TableData,
+    UpdateTableRequest,
 };
 use crate::chaindb::ChainDB;
 use rocket::serde::json::Json;
@@ -17,7 +18,12 @@ pub fn get_table_data(
             let db = connection.db;
             match db.create_table::<TableData>(&table_name) {
                 Ok(table) => match table.get_table() {
-                    Ok(data) => Json(ApiResponse::success(data.to_json())),
+                    Ok(data) => {
+                        println!("Data before to_json: {:?}", data);
+                        let json_data = data.to_json();
+                        println!("Data after to_json: {:?}", json_data);
+                        Json(ApiResponse::success(json_data))
+                    }
                     Err(e) => Json(ApiResponse::error(format!("Failed to get data: {}", e))),
                 },
                 Err(e) => Json(ApiResponse::error(format!("Failed to create table: {}", e))),
@@ -42,14 +48,26 @@ pub fn update_table(
             match db.create_table::<TableData>(&table_name) {
                 Ok(mut table) => {
                     let data = TableData::from_json(request.data.clone());
-                    match table.update(&data) {
-                        Ok(_) => match table.get_table() {
-                            Ok(latest) => Json(ApiResponse::success(latest.to_json())),
-                            Err(e) => Json(ApiResponse::error(format!(
-                                "Failed to get latest data: {}",
-                                e
-                            ))),
-                        },
+                    match table.update(&data, &request.doc_id) {
+                        Ok(_) => {
+                            // Buscar o registro atualizado pelo doc_id
+                            let criteria = HashMap::from([(
+                                "doc_id".to_string(),
+                                serde_json::Value::String(request.doc_id.clone()),
+                            )]);
+                            match table.find_where(criteria, Some(1), true) {
+                                Ok(records) if !records.is_empty() => {
+                                    Json(ApiResponse::success(records[0].to_json()))
+                                }
+                                Ok(_) => Json(ApiResponse::error(
+                                    "Record updated but not found when retrieving".to_string(),
+                                )),
+                                Err(e) => Json(ApiResponse::error(format!(
+                                    "Record updated but failed to retrieve: {}",
+                                    e
+                                ))),
+                            }
+                        }
                         Err(e) => Json(ApiResponse::error(format!("Failed to update data: {}", e))),
                     }
                 }
@@ -67,7 +85,7 @@ pub fn update_table(
 pub fn persist_table(
     auth: DatabaseAuth,
     table_name: &str,
-    request: Json<UpdateTableRequest>,
+    request: Json<PersistTableRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
         Ok(connection) => {
@@ -111,8 +129,15 @@ pub fn get_history(
             match db.create_table::<TableData>(&table_name) {
                 Ok(table) => match table.get_history(limit) {
                     Ok(records) => {
-                        let history: Vec<serde_json::Value> =
-                            records.into_iter().map(|record| record.to_json()).collect();
+                        println!("Records before to_json: {:?}", records);
+                        let history: Vec<serde_json::Value> = records
+                            .into_iter()
+                            .map(|record| {
+                                let json = record.to_json();
+                                println!("Record after to_json: {:?}", json);
+                                json
+                            })
+                            .collect();
                         Json(ApiResponse::success(history))
                     }
                     Err(e) => Json(ApiResponse::error(format!("Failed to get history: {}", e))),
@@ -245,6 +270,57 @@ pub fn list_tables(auth: DatabaseAuth) -> Json<ApiResponse<Vec<String>>> {
             match db.list_tables() {
                 Ok(tables) => Json(ApiResponse::success(tables)),
                 Err(e) => Json(ApiResponse::error(format!("Failed to list tables: {}", e))),
+            }
+        }
+        Err(e) => Json(ApiResponse::error(format!(
+            "Failed to connect to database: {}",
+            "Table not found or wrong Authorization token" // e
+        ))),
+    }
+}
+
+#[get("/table/<table_name>/doc/<doc_id>")]
+pub fn get_document_by_id(
+    auth: DatabaseAuth,
+    table_name: &str,
+    doc_id: &str,
+) -> Json<ApiResponse<serde_json::Value>> {
+    println!(
+        "Recebida requisição para buscar documento com doc_id: {} na tabela: {}",
+        doc_id, table_name
+    );
+
+    match ChainDB::connect(&auth.db_name, &auth.username, &auth.password) {
+        Ok(connection) => {
+            let db = connection.db;
+            match db.create_table::<TableData>(&table_name) {
+                Ok(table) => {
+                    // Criar critério de busca pelo doc_id
+                    let criteria = HashMap::from([(
+                        "doc_id".to_string(),
+                        serde_json::Value::String(doc_id.to_string()),
+                    )]);
+
+                    // Buscar o documento usando a função find_where existente
+                    match table.find_where(criteria, Some(1), true) {
+                        Ok(records) if !records.is_empty() => {
+                            // Retornar o primeiro (e único) registro encontrado
+                            Json(ApiResponse::success(records[0].to_json()))
+                        }
+                        Ok(_) => {
+                            // Documento não encontrado
+                            Json(ApiResponse::error(format!(
+                                "Document with doc_id {} not found",
+                                doc_id
+                            )))
+                        }
+                        Err(e) => Json(ApiResponse::error(format!(
+                            "Failed to find document: {}",
+                            e
+                        ))),
+                    }
+                }
+                Err(e) => Json(ApiResponse::error(format!("Failed to create table: {}", e))),
             }
         }
         Err(e) => Json(ApiResponse::error(format!(

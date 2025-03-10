@@ -19,7 +19,8 @@ pub fn create_database(request: Json<CreateDatabaseRequest>) -> Json<ApiResponse
             "Database created successfully".to_string(),
         )),
         Err(e) => Json(ApiResponse::error(format!(
-            "Failed to create database: {}",
+            // "Failed to create database: {}",
+            "{}",
             e
         ))),
     }

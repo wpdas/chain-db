@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
+use uuid::Uuid;
 
 use crate::encryption::DataEncryption;
 use crate::errors::ChainDBError;
@@ -88,7 +89,34 @@ where
     }
 
     pub fn persist(&mut self, record: &T) -> Result<(), ChainDBError> {
-        let record_json = serde_json::to_vec(&record)?;
+        // Converter o registro para Value para adicionar o doc_id
+        let mut record_value = serde_json::to_value(record)?;
+        println!("Record before adding doc_id: {:?}", record_value);
+
+        // Remover qualquer doc_id que o usuário tenha tentado incluir
+        if let serde_json::Value::Object(ref mut map) = record_value {
+            // Se houver um campo data que é um objeto, remover doc_id dele também
+            if let Some(serde_json::Value::Object(ref mut data_map)) = map.get_mut("data") {
+                data_map.remove("doc_id");
+            }
+
+            // Remover doc_id do objeto raiz
+            map.remove("doc_id");
+
+            // Gerar um UUID v4 único para o documento
+            let doc_id = Uuid::new_v4().to_string();
+
+            // Adicionar o doc_id gerado pelo sistema
+            map.insert(
+                "doc_id".to_string(),
+                serde_json::Value::String(doc_id.clone()),
+            );
+        }
+
+        println!("Record after adding doc_id: {:?}", record_value);
+
+        // Converter de volta para bytes
+        let record_json = serde_json::to_vec(&record_value)?;
         let encrypted_record = self.encryption.encrypt(&record_json)?;
 
         // Calculate current file based on total records
@@ -146,32 +174,97 @@ where
         Ok(())
     }
 
-    pub fn update(&mut self, record: &T) -> Result<(), ChainDBError> {
+    pub fn update(&mut self, record: &T, doc_id: &str) -> Result<(), ChainDBError> {
         if self.metadata.total_records == 0 {
-            return self.persist(record);
+            return Err(ChainDBError::RecordNotFound(
+                "No records exist in this table".to_string(),
+            ));
         }
 
-        let record_json = serde_json::to_vec(&record)?;
-        let encrypted_record = self.encryption.encrypt(&record_json)?;
+        // Procura o registro específico pelo doc_id
+        let mut found = false;
 
-        let file_name = format!("data_{}.cdb", self.metadata.current_file);
-        let file_path = self.path.join(&file_name);
+        // Iterar por todos os arquivos de dados, do mais recente para o mais antigo
+        for file_index in (0..=self.metadata.current_file).rev() {
+            let file_name = format!("data_{}.cdb", file_index);
+            let file_path = self.path.join(&file_name);
 
-        // Read all lines except the last one
-        let content = fs::read_to_string(&file_path)?;
-        let mut lines: Vec<_> = content.lines().collect();
+            if !file_path.exists() {
+                continue;
+            }
 
-        // Replace or append the last record
-        if !lines.is_empty() {
-            lines.pop(); // Remove last line
+            // Ler o arquivo linha por linha
+            let file = File::open(&file_path)?;
+            let reader = BufReader::new(file);
+            let mut updated_lines = Vec::new();
+            let mut file_modified = false;
+
+            for line in reader.lines() {
+                let line = line?;
+                let decoded = general_purpose::STANDARD.decode(&line)?;
+                let decrypted = self.encryption.decrypt(&decoded)?;
+                let record_value: serde_json::Value = serde_json::from_slice(&decrypted)?;
+
+                // Verificar se este é o registro que estamos procurando
+                if let Some(record_doc_id) = record_value.get("doc_id") {
+                    if let Some(id_str) = record_doc_id.as_str() {
+                        if id_str == doc_id {
+                            // Encontramos o registro, vamos atualizá-lo
+                            // Converter o registro para Value para preservar o doc_id
+                            let mut updated_value = serde_json::to_value(record)?;
+
+                            // Remover qualquer doc_id que o usuário tenha tentado incluir
+                            if let serde_json::Value::Object(ref mut map) = &mut updated_value {
+                                // Se houver um campo data que é um objeto, remover doc_id dele também
+                                if let Some(serde_json::Value::Object(ref mut data_map)) =
+                                    map.get_mut("data")
+                                {
+                                    data_map.remove("doc_id");
+                                }
+
+                                // Remover doc_id do objeto raiz
+                                map.remove("doc_id");
+
+                                // Preservar o doc_id original
+                                map.insert(
+                                    "doc_id".to_string(),
+                                    serde_json::Value::String(doc_id.to_string()),
+                                );
+                            }
+
+                            // Criptografar e adicionar à lista de linhas atualizadas
+                            let updated_json = serde_json::to_vec(&updated_value)?;
+                            let encrypted_updated = self.encryption.encrypt(&updated_json)?;
+                            let base64_str = general_purpose::STANDARD.encode(&encrypted_updated);
+                            updated_lines.push(base64_str);
+
+                            found = true;
+                            file_modified = true;
+                            continue;
+                        }
+                    }
+                }
+
+                // Se não for o registro que estamos procurando, manter como está
+                updated_lines.push(line);
+            }
+
+            // Se o arquivo foi modificado, escrever as alterações de volta
+            if file_modified {
+                let mut file = fs::File::create(&file_path)?;
+                for line in updated_lines {
+                    writeln!(file, "{}", line)?;
+                }
+                break;
+            }
         }
-        let base64_str = general_purpose::STANDARD.encode(&encrypted_record);
-        lines.push(&base64_str);
 
-        // Write back to file
-        let mut file = fs::File::create(&file_path)?;
-        for line in lines {
-            writeln!(file, "{}", line)?;
+        // Se não encontramos o registro, retornar um erro
+        if !found {
+            return Err(ChainDBError::RecordNotFound(format!(
+                "Record with doc_id {} not found",
+                doc_id
+            )));
         }
 
         // Emitir evento de atualização
@@ -366,6 +459,9 @@ where
             .decode(last_line)
             .map_err(|e| ChainDBError::SerializationError(e.to_string()))?;
         let decrypted_data = self.encryption.decrypt(&encrypted_data)?;
+
+        // Deserializar os dados diretamente, sem modificações
+        // O doc_id já está incluído nos dados serializados
         Ok(serde_json::from_slice(&decrypted_data)?)
     }
 
@@ -639,16 +735,30 @@ fn matches_criteria(
     criteria: &HashMap<String, serde_json::Value>,
 ) -> bool {
     if let serde_json::Value::Object(record_obj) = record {
-        // Verifica se existe o campo "data" e se é um objeto
-        if let Some(serde_json::Value::Object(data_obj)) = record_obj.get("data") {
-            // Verifica cada critério
-            for (field, expected_value) in criteria {
+        // Verifica cada critério
+        for (field, expected_value) in criteria {
+            // Primeiro verifica se o campo existe no objeto raiz (para doc_id)
+            if let Some(actual_value) = record_obj.get(field) {
+                // Se o valor do campo não corresponde ao critério, retorna false
+                if actual_value != expected_value {
+                    println!(
+                        "Campo '{}' no objeto raiz não corresponde. Esperado: {:?}, Atual: {:?}",
+                        field, expected_value, actual_value
+                    );
+                    return false;
+                }
+                // Se encontrou e corresponde, continua para o próximo critério
+                continue;
+            }
+
+            // Se não encontrou no objeto raiz, verifica no objeto data
+            if let Some(serde_json::Value::Object(data_obj)) = record_obj.get("data") {
                 match data_obj.get(field) {
                     Some(actual_value) => {
                         // Se o valor do campo não corresponde ao critério, retorna false
                         if actual_value != expected_value {
                             println!(
-                                "Campo '{}' não corresponde. Esperado: {:?}, Atual: {:?}",
+                                "Campo '{}' no objeto data não corresponde. Esperado: {:?}, Atual: {:?}",
                                 field, expected_value, actual_value
                             );
                             return false;
@@ -660,18 +770,18 @@ fn matches_criteria(
                         return false;
                     }
                 }
+            } else {
+                // O registro não tem um campo "data" válido e o campo não foi encontrado no objeto raiz
+                println!(
+                    "Campo '{}' não encontrado no registro e não há objeto 'data' válido",
+                    field
+                );
+                return false;
             }
-            // Todos os critérios foram atendidos
-            println!("Registro corresponde a todos os critérios");
-            true
-        } else {
-            // O registro não tem um campo "data" válido
-            println!(
-                "Registro não possui um campo 'data' válido: {:?}",
-                record_obj
-            );
-            false
         }
+        // Todos os critérios foram atendidos
+        println!("Registro corresponde a todos os critérios");
+        true
     } else {
         // O registro não é um objeto JSON
         println!("Registro não é um objeto JSON: {:?}", record);
@@ -685,15 +795,27 @@ fn matches_criteria_advanced(
     criteria: &HashMap<String, (ComparisonOperator, serde_json::Value)>,
 ) -> bool {
     if let serde_json::Value::Object(record_obj) = record {
-        // Verifica se existe o campo "data" e se é um objeto
-        if let Some(serde_json::Value::Object(data_obj)) = record_obj.get("data") {
-            // Verifica cada critério
-            for (field, (operator, expected_value)) in criteria {
+        // Verifica cada critério
+        for (field, (operator, expected_value)) in criteria {
+            // Primeiro verifica se o campo existe no objeto raiz (para doc_id)
+            if let Some(actual_value) = record_obj.get(field) {
+                // Verifica se o valor do campo corresponde ao critério com o operador especificado
+                if !compare_values(actual_value, expected_value, operator) {
+                    println!("Campo '{}' no objeto raiz não corresponde com operador {:?}. Esperado: {:?}, Atual: {:?}", 
+                        field, operator, expected_value, actual_value);
+                    return false;
+                }
+                // Se encontrou e corresponde, continua para o próximo critério
+                continue;
+            }
+
+            // Se não encontrou no objeto raiz, verifica no objeto data
+            if let Some(serde_json::Value::Object(data_obj)) = record_obj.get("data") {
                 match data_obj.get(field) {
                     Some(actual_value) => {
                         // Verifica se o valor do campo corresponde ao critério com o operador especificado
                         if !compare_values(actual_value, expected_value, operator) {
-                            println!("Campo '{}' não corresponde com operador {:?}. Esperado: {:?}, Atual: {:?}", 
+                            println!("Campo '{}' no objeto data não corresponde com operador {:?}. Esperado: {:?}, Atual: {:?}", 
                                 field, operator, expected_value, actual_value);
                             return false;
                         }
@@ -704,18 +826,18 @@ fn matches_criteria_advanced(
                         return false;
                     }
                 }
+            } else {
+                // O registro não tem um campo "data" válido e o campo não foi encontrado no objeto raiz
+                println!(
+                    "Campo '{}' não encontrado no registro e não há objeto 'data' válido",
+                    field
+                );
+                return false;
             }
-            // Todos os critérios foram atendidos
-            println!("Registro corresponde a todos os critérios avançados");
-            true
-        } else {
-            // O registro não tem um campo "data" válido
-            println!(
-                "Registro não possui um campo 'data' válido: {:?}",
-                record_obj
-            );
-            false
         }
+        // Todos os critérios foram atendidos
+        println!("Registro corresponde a todos os critérios avançados");
+        true
     } else {
         // O registro não é um objeto JSON
         println!("Registro não é um objeto JSON: {:?}", record);

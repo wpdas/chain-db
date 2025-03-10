@@ -1,6 +1,34 @@
 # Changelog
 
-## 1.0.1 (2025-03-06)
+## 1.2.0 (2025-03-10)
+
+### Breaking Changes
+
+- **Required Document ID for Updates**: The `doc_id` parameter is now required for all update operations. The ability to update the most recent record without specifying a `doc_id` has been removed for consistency and clarity.
+
+### New Features
+
+- **Document IDs**: Each record now automatically receives a unique `doc_id` (UUID) when created
+- **Targeted Record Updates**: Added ability to update specific records by their `doc_id` instead of only the most recent record
+- **Improved Search Capabilities**: Enhanced search functionality to find records by `doc_id` in both simple and advanced searches
+- **Better Update Response**: When updating a record by `doc_id`, the API now returns the updated record instead of the latest record
+- **Direct Document Access**: Added new API endpoint `/table/<table_name>/doc/<doc_id>` to directly retrieve a specific document by its `doc_id`
+
+### Security Improvements
+
+- **Protected Document IDs**: Added protection to ensure that `doc_id` values cannot be set or modified by users. Any attempt to include a `doc_id` in the data when creating or updating records will be ignored.
+
+### Bug Fixes
+
+- **Persist Operation**: Fixed an issue where the `persist` operation incorrectly required a `doc_id`. Created a separate request structure to ensure `persist` operations don't require a `doc_id` parameter.
+
+### Documentation
+
+- Added detailed explanation about the complete replacement behavior during updates (no property merging)
+- Updated API examples to demonstrate searching and updating records by `doc_id`
+- Removed examples and documentation for updating the latest record without a `doc_id`
+
+## 1.1.0 (2025-03-06)
 
 - **List All Tables Feature**: Now it's possible to list all tables present for a specific Database.
 

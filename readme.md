@@ -282,10 +282,11 @@ curl -X POST http://localhost:2818/api/v1/database/change-password \
 5. Update table data:
 
 ```bash
+# Update a record by doc_id (required)
 curl -X POST http://localhost:2818/api/v1/table/greetings/update \
   -H "Content-Type: application/json" \
   -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ=" \
-  -d '{"data": {"greeting": "Hello, World!"}}'
+  -d '{"data": {"greeting": "Updated specific record!"}, "doc_id": "550e8400-e29b-41d4-a716-446655440000"}'
 ```
 
 6. Get current table data:
@@ -304,11 +305,44 @@ curl -X POST http://localhost:2818/api/v1/table/greetings/persist \
   -d '{"data": {"greeting": "New Record!"}}'
 ```
 
+The response will include the newly created record with its system-generated `doc_id`:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "greeting": "New Record!",
+    "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+
 8. Get history:
 
 ```bash
 curl -X GET http://localhost:2818/api/v1/table/greetings/history?limit=10 \
   -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
+```
+
+9. Get document by doc_id:
+
+```bash
+curl -X GET http://localhost:2818/api/v1/table/greetings/doc/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Basic dGVzdF9kYjpyb290OjEyMzQ="
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "greeting": "Hello!",
+    "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+}
 ```
 
 ## How It Works
@@ -388,9 +422,21 @@ The `POST /table/<table_name>/find` route allows you to search for records based
 
 In this example, the search will look for records where `data.name` equals "John" AND `data.age` equals 30.
 
+You can also search for records by their `doc_id`:
+
+```json
+{
+  "criteria": {
+    "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+  },
+  "limit": 10,
+  "reverse": true
+}
+```
+
 **Parameters:**
 
-- `criteria`: An object containing the search criteria, where the keys are the field names within the `data` object and the values are the expected values for those fields.
+- `criteria`: An object containing the search criteria, where the keys are the field names within the `data` object and the values are the expected values for those fields. You can also search for fields in the root object, such as `doc_id`.
 - `limit` (optional): Maximum number of records to be returned.
 - `reverse` (optional): If true, search from the most recent record to the oldest (default: true).
 
@@ -451,14 +497,28 @@ In this example, the search will look for records where:
 - `data.name` contains "Smith" AND
 - `data.city` equals "New York"
 
+You can also search for records by their `doc_id`:
+
+```json
+{
+  "criteria": [
+    {
+      "field": "doc_id",
+      "operator": "Eq",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ],
+  "limit": 10,
+  "reverse": true
+}
+```
+
 **Parameters:**
 
 - `criteria`: An array of objects containing the search criteria, where each object has:
-  - `field`: The name of the field within the `data` object to be compared.
+  - `field`: The name of the field within the `data` object to be compared. You can also search for fields in the root object, such as `doc_id`.
   - `operator`: The comparison operator to be used.
   - `value`: The value to be compared.
-- `limit` (optional): Maximum number of records to be returned.
-- `reverse` (optional): If true, search from the most recent record to the oldest (default: true).
 
 **Available Comparison Operators:**
 
@@ -602,3 +662,65 @@ Events have the following structure:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Document IDs and Record Management
+
+ChainDB now assigns a unique document ID (`doc_id`) to each record when it is created. This provides several benefits:
+
+1. **Unique Identification**: Each record has a UUID that uniquely identifies it throughout its lifecycle.
+
+2. **Targeted Updates**: You can update specific records by referencing their `doc_id`, not just the most recent one.
+
+3. **Improved Data Management**: The `doc_id` makes it easier to track and reference specific records in your application logic.
+
+When you persist a new record, a `doc_id` is automatically generated and included in the record:
+
+```json
+{
+  "greeting": "Hello!",
+  "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Important**: The `doc_id` is managed by the system and cannot be set or modified by the user. If you include a `doc_id` in your data when creating or updating records, it will be ignored and replaced with a system-generated value (for new records) or the existing value (for updates).
+
+### Updating Specific Records
+
+To update a record in the database, you must specify its `doc_id`. The `doc_id` is now a required parameter for all update operations.
+
+**Important**: When updating a record, the new data completely replaces the existing data. There is no merging of properties. If you want to preserve existing properties, you must include them in your update request.
+
+For example, if your record has:
+
+```json
+{
+  "name": "John",
+  "age": 30,
+  "city": "New York",
+  "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+And you update it with:
+
+```json
+{
+  "data": {
+    "age": 31
+  },
+  "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+The resulting record will be:
+
+```json
+{
+  "age": 31,
+  "doc_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+The `name` and `city` properties are lost because the update completely replaces the data.
+
+Note that updating older records may be more computationally expensive, as the system needs to search through the history to find the specified record. The performance impact depends on how far back in history the record is located.

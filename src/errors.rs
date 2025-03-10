@@ -1,3 +1,4 @@
+use base64;
 use serde_json;
 use std::io;
 use std::string::FromUtf8Error;
@@ -13,6 +14,7 @@ pub enum ChainDBError {
     DatabaseNotFound(String),
     ConfigNotFound(String),
     ValidationError(String),
+    RecordNotFound(String),
 }
 
 impl From<io::Error> for ChainDBError {
@@ -45,6 +47,12 @@ impl From<FromUtf8Error> for ChainDBError {
     }
 }
 
+impl From<base64::DecodeError> for ChainDBError {
+    fn from(error: base64::DecodeError) -> Self {
+        ChainDBError::DecryptionError(error.to_string())
+    }
+}
+
 impl std::fmt::Display for ChainDBError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -61,6 +69,7 @@ impl std::fmt::Display for ChainDBError {
                 write!(f, "Config not found for database: {}", name)
             }
             ChainDBError::ValidationError(msg) => write!(f, "Validation error: {}", msg),
+            ChainDBError::RecordNotFound(name) => write!(f, "Record not found: {}", name),
         }
     }
 }

@@ -39,6 +39,7 @@ pub fn routes() -> Vec<rocket::Route> {
         routes::database::change_password,
         routes::table::list_tables,
         routes::table::get_table_data,
+        routes::table::get_document_by_id,
         routes::table::update_table,
         routes::table::persist_table,
         routes::table::get_history,

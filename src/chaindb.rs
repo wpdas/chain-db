@@ -28,12 +28,21 @@ pub struct ChainDB {
 
 impl ChainDB {
     pub fn create_database(name: &str, user: &str, password: &str) -> Result<(), ChainDBError> {
+        // Verificar se o banco de dados já existe
+        let data_dir = PathBuf::from(DATA_DIR);
+        let base_path = data_dir.join(name);
+
+        if base_path.exists() {
+            return Err(ChainDBError::DatabaseAlreadyExists(format!(
+                "Database '{}' already exists",
+                name
+            )));
+        }
+
         let encryption = DataEncryption::new(password);
         let config = Config::new(name, user, password);
 
         // Create data directory
-        let data_dir = PathBuf::from(DATA_DIR);
-        let base_path = data_dir.join(name);
         fs::create_dir_all(&base_path)?;
 
         // Save encrypted config
