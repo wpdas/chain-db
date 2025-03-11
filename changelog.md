@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 (2025-03-11)
+
+### Improvements
+
+- **Enhanced CORS Support**: Improved Cross-Origin Resource Sharing (CORS) configuration to allow requests from any origin, including applications running on different machines
+- **OPTIONS Request Handling**: Added dedicated handler for OPTIONS requests to properly support CORS preflight requests
+- **Extended Headers Support**: Expanded the list of allowed headers in CORS responses to include common authentication and content headers
+- **Improved Logging**: Added more detailed logging to help diagnose connection issues
+
 ## 1.2.0 (2025-03-10)
 
 ### Breaking Changes

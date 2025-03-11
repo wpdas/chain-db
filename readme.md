@@ -14,7 +14,7 @@
     <span> | </span>
     <a href="https://github.com/wpdas/chain-db#client-libraries-backend">Client Libraries</a>
     <span> | </span>
-    <a href="https://github.com/wpdas/chain-db-cli#command-line-interface-cli">CLI</a>
+    <a href="https://github.com/wpdas/chain-db-cli">CLI</a>
   </h3>
 </div>
 
